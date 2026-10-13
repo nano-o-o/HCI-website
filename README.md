@@ -2,7 +2,7 @@
 
 An interactive 3D globe for discovering festivals around the world, made as a class HCI project.
 
-**Live site:** https://nano-o-o.github.io/HCI-website/HCI.html
+**Live site:** https://nano-o-o.github.io/HCI-website/
 
 Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Lunar New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated.
 
@@ -35,6 +35,7 @@ and open http://localhost:8765/HCI.html.
 | Path | What it is |
 |---|---|
 | `HCI.html` | Page structure, festival cards and reading views |
+| `index.html` | Redirects to `HCI.html`, so the short site address works |
 | `style.css` | Styles, day and night themes, festival colours |
 | `globe.js` | Globe, pins, year ring, festival data and navigation |
 | `DESIGN.md` | Design system: colours, type and layout rules |
