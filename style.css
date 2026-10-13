@@ -1,0 +1,908 @@
+/* Lantern Night (night) + Golden Morning (day) — see DESIGN.md.
+   The page theme is set by data-theme on <html>; globe.js reads the --globe-* and --festival-* / --glow-* tokens. */
+
+@font-face {
+    font-family: "Fraunces";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("vendor/fonts/fraunces-600.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Alegreya Sans";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("vendor/fonts/alegreya-sans-400.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Alegreya Sans";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("vendor/fonts/alegreya-sans-700.woff2") format("woff2");
+}
+
+:root {
+    /* Night surfaces */
+    --night-900: #0e0820;
+    --night-800: #1a1033;
+    --night-700: #2e1a4f;
+    --on-night: #f8f1ff;
+    --on-night-muted: #cdbfe0;
+    --gold: #f2b84b;
+
+    /* Day surfaces */
+    --sky-top: #bfe2f2;
+    --sky-mid: #fbe6cc;
+    --sky-bottom: #f6cfa8;
+    --night-sky-top: #0b0926;
+    --night-sky-mid: #24134a;
+    --night-sky-bottom: #4a2638;
+    --daylight: #fff6ea;
+    --amber-text: #9a4a0c;
+
+    /* Card (paper) surfaces — same in both themes */
+    --cream: #fdf6e9;
+    --cream-edge: #ecd3a0;
+    --ink: #2b1a3d;
+    --ink-soft: #4a3b57;
+    --ink-muted: #6e5d7c;
+
+    /* Globe, per theme (both sets are always defined; globe.js crossfades them) */
+    --globe-night-ocean: #241640;
+    --globe-night-land: #6b4f26;
+    --globe-night-coast: #e9c46a;
+    --globe-night-halo: #f2b84b;
+    --globe-day-ocean: #4fb0c6;
+    --globe-day-land: #ecd8a8;
+    --globe-day-coast: #a8804c;
+    --globe-day-halo: #ffffff;
+
+    /* Festival colours: solid behind text and as day pins, glow as night pins */
+    --festival-diwali: #a16207;
+    --festival-lunar: #dc2626;
+    --festival-eid: #115e59;
+    --festival-rio: #4d7c0f;
+    --festival-oktoberfest: #2563eb;
+    --festival-timkat: #6d28d9;
+    --festival-holi: #db2777;
+    --festival-songkran: #0e7490;
+    --festival-muertos: #9a3412;
+    --festival-hanukkah: #57534e;
+    --festival-matariki: #312e81;
+    --festival-osun: #166534;
+    --festival-vesak: #9f1239;
+    --glow-diwali: #fde047;
+    --glow-lunar: #f87171;
+    --glow-eid: #2dd4bf;
+    --glow-rio: #a3e635;
+    --glow-oktoberfest: #93c5fd;
+    --glow-timkat: #c4b5fd;
+    --glow-holi: #f472b6;
+    --glow-songkran: #67e8f9;
+    --glow-muertos: #fdba74;
+    --glow-hanukkah: #d6d3d1;
+    --glow-matariki: #818cf8;
+    --glow-osun: #86efac;
+    --glow-vesak: #fda4af;
+
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Alegreya Sans", system-ui, sans-serif;
+    --radius: 16px;
+    --lantern-shadow: 0 18px 40px -12px rgba(242, 184, 75, 0.35);
+    --theme-fade: 1s ease;
+}
+
+/* Semantic roles, switched by theme */
+:root[data-theme="day"] {
+    --surface-bar: var(--daylight);
+    --text: var(--ink);
+    --text-muted: #54445f;
+    --accent-text: var(--amber-text);
+    --focus: var(--ink);
+    --chip-bg: rgba(255, 255, 255, 0.72);
+    --chip-border: rgba(43, 26, 61, 0.14);
+    --line: rgba(43, 26, 61, 0.12);
+}
+
+:root[data-theme="night"] {
+    --surface-bar: var(--night-900);
+    --text: var(--on-night);
+    --text-muted: var(--on-night-muted);
+    --accent-text: var(--gold);
+    --focus: var(--gold);
+    --chip-bg: rgba(14, 8, 32, 0.75);
+    --chip-border: rgba(242, 184, 75, 0.25);
+    --line: rgba(242, 184, 75, 0.18);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    font-size-adjust: 0.5; /* Alegreya Sans has a small x-height; match the old Nunito text size */
+    background-color: var(--surface-bar);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Everything that changes colour with the theme fades like a sunset */
+body,
+.site-footer,
+.hero-intro h1,
+.hero-intro p,
+.fl-meta,
+.fl-month,
+.globe-tooltip {
+    transition: background-color var(--theme-fade), color var(--theme-fade), border-color var(--theme-fade);
+}
+
+[hidden] {
+    display: none !important;
+}
+
+:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
+/* Globe Stage (fills the screen) */
+.globe-hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 520px;
+    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 65%, var(--sky-bottom) 100%);
+    overflow: hidden;
+}
+
+/* Night sky layered over the day sky. Gradients can't animate, so a soft-edged mask
+   slides across instead: night arrives from the east (right) like dusk, and recedes the same way. */
+.globe-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* Mirrors the day sky: deep indigo above, violet, a dim lantern glow at the horizon; soft glow behind the globe on top */
+    background:
+        radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--night-700) 70%, transparent) 0%, transparent 55%),
+        linear-gradient(180deg, var(--night-sky-top) 0%, var(--night-sky-mid) 60%, var(--night-sky-bottom) 100%);
+    mask-image: linear-gradient(to left, black 40%, transparent 60%);
+    mask-size: 300% 100%;
+    mask-repeat: no-repeat;
+    mask-position: 0% 0;
+    transition: mask-position var(--theme-fade);
+}
+
+:root[data-theme="night"] .globe-hero::before {
+    mask-position: 100% 0;
+}
+
+#globe-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    cursor: grab;
+    transition: transform 0.35s ease;
+}
+
+/* The stage clips overflow, so the focus ring sits inside the edge */
+#globe-container:focus-visible {
+    outline-offset: -4px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+#globe-container:active {
+    cursor: grabbing;
+}
+
+/* Panel open: centre the globe between the festival list (left) and the panel (right) */
+.globe-hero.panel-open #globe-container {
+    transform: translateX(-42px);
+}
+
+/* Left column: intro + festival list */
+.hero-side {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    bottom: 2rem;
+    z-index: 10;
+    width: 290px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    pointer-events: none;
+}
+
+.hero-intro h1 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+}
+
+/* Heading is always two lines: "A day of" / the festival name */
+.hero-name {
+    display: block;
+    white-space: nowrap;
+}
+
+.hero-intro p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Sits on the list's top edge: the list's own 1rem top padding gives the same heading-to-item space as the right column */
+.hero-side .festival-list-heading {
+    margin-bottom: -1.5rem;
+}
+
+.festival-list {
+    margin-left: -18px; /* the left scrollbar (10px in Chrome) and the ul's 8px padding hang in the margin, so items line up with the intro */
+    pointer-events: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 0;
+    direction: rtl; /* puts the scrollbar on the left; the ul switches back to ltr */
+    /* Standard properties only: Chrome 121+ ignores ::-webkit-scrollbar once these are set */
+    scrollbar-width: thin;
+    scrollbar-color: var(--chip-border) transparent;
+    /* Soft fade at both ends so it's clear the list scrolls; the ul's end padding keeps items clear of it */
+    mask-image: linear-gradient(to bottom, transparent, black 1rem, black calc(100% - 1rem), transparent);
+}
+
+.festival-list:hover {
+    scrollbar-color: var(--accent-text) transparent;
+}
+
+.festival-list ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    direction: ltr;
+    padding: 1rem 6px 1rem 8px; /* room for the end fades, the scrollbar gap, the focus ring and hover nudge */
+}
+
+/* Each festival button carries its festival's colour */
+.region-btn[data-target="diwali"] { --c: var(--festival-diwali); --g: var(--glow-diwali); }
+.region-btn[data-target="lunar-new-year"] { --c: var(--festival-lunar); --g: var(--glow-lunar); }
+.region-btn[data-target="eid"] { --c: var(--festival-eid); --g: var(--glow-eid); }
+.region-btn[data-target="rio-carnival"] { --c: var(--festival-rio); --g: var(--glow-rio); }
+.region-btn[data-target="oktoberfest"] { --c: var(--festival-oktoberfest); --g: var(--glow-oktoberfest); }
+.region-btn[data-target="timkat"] { --c: var(--festival-timkat); --g: var(--glow-timkat); }
+.region-btn[data-target="holi"] { --c: var(--festival-holi); --g: var(--glow-holi); }
+.region-btn[data-target="songkran"] { --c: var(--festival-songkran); --g: var(--glow-songkran); }
+.region-btn[data-target="dia-de-muertos"] { --c: var(--festival-muertos); --g: var(--glow-muertos); }
+.region-btn[data-target="hanukkah"] { --c: var(--festival-hanukkah); --g: var(--glow-hanukkah); }
+.region-btn[data-target="matariki"] { --c: var(--festival-matariki); --g: var(--glow-matariki); }
+.region-btn[data-target="osun-osogbo"] { --c: var(--festival-osun); --g: var(--glow-osun); }
+.region-btn[data-target="vesak"] { --c: var(--festival-vesak); --g: var(--glow-vesak); }
+
+.region-btn {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 10px 1fr auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    text-align: left;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    color: var(--text);
+    padding: 0.6rem 0.9rem;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background-color var(--theme-fade), color var(--theme-fade), border-color 0.2s ease, transform 0.2s ease;
+}
+
+/* Colour key: matches the pin (solid by day, glowing at night) */
+.region-btn::before {
+    content: "";
+    grid-row: span 2;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--c);
+}
+
+:root[data-theme="night"] .region-btn::before {
+    background: var(--g);
+    box-shadow: 0 0 8px var(--g);
+}
+
+.fl-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.fl-name,
+.fl-meta {
+    grid-column: 2;
+}
+
+.fl-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+/* The list runs in calendar order, so the month gets its own column */
+.fl-month {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    padding-left: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.fl-now {
+    margin-top: 0.15rem;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    background: var(--c);
+    color: #ffffff;
+    font-size: 0.7rem;
+}
+
+.region-btn[aria-pressed="true"] .fl-now {
+    background: #ffffff;
+    color: var(--c);
+}
+
+.region-btn:hover {
+    border-color: var(--c);
+    transform: translateX(3px);
+}
+
+.region-btn[aria-pressed="true"] {
+    background: var(--c);
+    border-color: var(--c);
+    color: #ffffff;
+}
+
+.region-btn[aria-pressed="true"] .fl-meta,
+.region-btn[aria-pressed="true"] .fl-month {
+    color: #ffffff;
+}
+
+.region-btn[aria-pressed="true"]::before {
+    background: #ffffff;
+    box-shadow: none;
+}
+
+.globe-tooltip {
+    position: absolute;
+    z-index: 20;
+    transform: translate(-50%, calc(-100% - 14px));
+    background: var(--surface-bar);
+    border: 1px solid var(--chip-border);
+    color: var(--text);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Right column on the home view, mirroring the festival list; the details panel takes its place when open */
+.coming-up {
+    position: absolute;
+    top: 2rem; /* globe.js lines it up with the "All festivals" heading */
+    right: calc(2rem - 6px);
+    bottom: 1rem;
+    z-index: 10;
+    width: calc(260px + 12px);
+    padding: 0 6px 4px; /* room inside the scroll box for focus rings and the hover nudge */
+    display: none;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto; /* short screens: scrolls rather than cutting off the month buttons */
+    scrollbar-width: thin;
+    scrollbar-color: var(--chip-border) transparent;
+    transition: opacity 0.35s ease, visibility 0.35s;
+}
+
+@media (min-width: 1240px) {
+    .coming-up {
+        display: flex;
+    }
+}
+
+.globe-hero.panel-open .coming-up {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.coming-up-heading {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.coming-up ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Pins switch: chip-look pills; the chosen one fills with the text colour */
+.pin-style label {
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    color: var(--text);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background-color var(--theme-fade), color var(--theme-fade), border-color 0.2s ease;
+}
+
+.pin-style label:hover {
+    border-color: var(--accent-text);
+}
+
+.pin-style label:has(:checked) {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--surface-bar);
+}
+
+.pin-style {
+    pointer-events: auto;
+    flex: none;
+    border: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.pin-style legend {
+    float: left; /* a floated legend becomes a flex item, here a full-width row of its own */
+    width: 100%;
+    margin-bottom: 0.25rem;
+}
+
+/* The radio stays focusable for keyboards; its pill shows the focus ring */
+.pin-style input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pin-style label:has(:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
+/* Festival details panel */
+.info-panel {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 30;
+    width: 380px;
+    max-width: calc(100% - 3rem);
+    overflow-y: auto;
+    scrollbar-width: thin; /* same scrollbar as the festival list */
+    scrollbar-color: var(--chip-border) transparent;
+    border-radius: var(--radius);
+    transform: translateX(calc(100% + 2rem));
+    visibility: hidden;
+    transition: transform 0.35s ease, visibility 0.35s;
+}
+
+.info-panel:hover {
+    scrollbar-color: var(--accent-text) transparent;
+}
+
+.info-panel.is-open {
+    transform: translateX(0);
+    visibility: visible;
+    /* visible at once so the title can take focus as the panel opens */
+    transition: transform 0.35s ease, visibility 0s;
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--night-900) 80%, transparent);
+    color: var(--on-night);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    display: grid;
+    place-items: center;
+}
+
+.close-btn:hover {
+    background: var(--gold);
+    color: var(--ink);
+}
+
+.festival-card {
+    background: var(--cream);
+    border: 1px solid var(--cream-edge);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--lantern-shadow);
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+/* Each card carries a strip of its festival's pattern, in its festival colour, under the photo */
+#card-diwali { --c: var(--festival-diwali); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M14 1c3 4 4 7 0 9c-4-2-3-5 0-9z'/><path d='M8 11h12l-2 2.5h-8z'/></svg>"); } /* diya flames */
+#card-lunar-new-year { --c: var(--festival-lunar); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M0 13H28M4 13V2H16V9H10V6' fill='none' stroke='black' stroke-width='2'/></svg>"); } /* fret */
+#card-eid { --c: var(--festival-eid); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><rect x='9' y='2' width='10' height='10'/><rect x='9' y='2' width='10' height='10' transform='rotate(45 14 7)'/><circle cx='0' cy='7' r='1.5'/><circle cx='28' cy='7' r='1.5'/></svg>"); } /* eight-point star */
+#card-rio-carnival { --c: var(--festival-rio); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M0 0H28V4A7 7 0 0 1 14 4A7 7 0 0 1 0 4Z'/></svg>"); } /* sequin scallops */
+#card-oktoberfest { --c: var(--festival-oktoberfest); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M0 7L7 0L14 7L7 14Z'/><path d='M14 7L21 1L27 7L21 13Z' fill='none' stroke='black' stroke-width='1.5'/></svg>"); } /* lozenges */
+#card-timkat { --c: var(--festival-timkat); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M12.5 1h3v4.5H20v3h-4.5V13h-3V8.5H8v-3h4.5Z'/><circle cx='9' cy='2' r='1.2'/><circle cx='19' cy='2' r='1.2'/><circle cx='9' cy='12' r='1.2'/><circle cx='19' cy='12' r='1.2'/></svg>"); } /* cross */
+#card-holi { --c: var(--festival-holi); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><circle cx='5' cy='8' r='4'/><circle cx='12' cy='3.5' r='2'/><circle cx='19' cy='9' r='3'/><circle cx='25' cy='3' r='1.5'/></svg>"); } /* colour-powder splashes */
+#card-songkran { --c: var(--festival-songkran); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M7 1c3 4 4 6.5 4 8.5a4 4 0 0 1-8 0c0-2 1-4.5 4-8.5z'/><path d='M21 5c2 2.6 3 4.2 3 5.5a3 3 0 0 1-6 0c0-1.3 1-2.9 3-5.5z'/></svg>"); } /* water drops */
+#card-dia-de-muertos { --c: var(--festival-muertos); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><rect width='28' height='1.5'/><path fill-rule='evenodd' d='M1 1.5H13V10L7 13.5L1 10ZM7 4L9 6.5L7 9L5 6.5Z'/><path fill-rule='evenodd' d='M15 1.5H27V10L21 13.5L15 10ZM21 4L23 6.5L21 9L19 6.5Z'/></svg>"); } /* papel picado */
+#card-hanukkah { --c: var(--festival-hanukkah); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><rect x='4.5' y='7.5' width='3' height='6.5'/><path d='M6 0c3 2.4 3.2 5 0 6.6c-3.2-1.6-3-4.2 0-6.6z'/><rect x='18.5' y='7.5' width='3' height='6.5'/><path d='M20 0c3 2.4 3.2 5 0 6.6c-3.2-1.6-3-4.2 0-6.6z'/></svg>"); } /* menorah flames */
+#card-matariki { --c: var(--festival-matariki); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M7 1L8.2 5.8L13 7L8.2 8.2L7 13L5.8 8.2L1 7L5.8 5.8Z'/><circle cx='18' cy='4' r='1.3'/><circle cx='23' cy='8.5' r='1.7'/><circle cx='17.5' cy='11' r='1'/></svg>"); } /* star cluster */
+#card-osun-osogbo { --c: var(--festival-osun); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M0 7C4.7 2 9.3 2 14 7S23.3 12 28 7' fill='none' stroke='black' stroke-width='2.5'/></svg>"); } /* river waves */
+#card-vesak { --c: var(--festival-vesak); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M14 1c2 3 2 6 0 9c-2-3-2-6 0-9z'/><path d='M13 11c-3 0-5.5-1.8-6.5-5c3 .2 5 2 6.5 5z'/><path d='M15 11c3 0 5.5-1.8 6.5-5c-3 .2-5 2-6.5 5z'/><rect x='7' y='12' width='14' height='1.5'/></svg>"); } /* lotus */
+
+.festival-card::before {
+    content: "";
+    order: 1;
+    flex: none;
+    height: 14px;
+    margin-top: 12px;
+    background: var(--c);
+    mask: var(--motif) center / 28px 14px repeat-x;
+}
+
+.card-content {
+    order: 2;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-image-wrap {
+    position: relative;
+    width: 100%;
+    height: 200px;
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#card-hanukkah .card-img {
+    object-position: 50% 15%; /* keep the menorah's branches in the crop */
+}
+
+/* Region then country pills, right-aligned clear of the close button (top-left) */
+.badges {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    left: 64px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.badge {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+    background-color: var(--c);
+    color: #ffffff;
+}
+
+/* Photographer and licence, bottom-right of the photo */
+.photo-credit {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    max-width: calc(100% - 16px);
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--night-900) 60%, transparent);
+    color: #ffffff;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    text-decoration: none;
+}
+
+.photo-credit:hover {
+    text-decoration: underline;
+}
+
+.festival-card .photo-credit:focus-visible {
+    outline-color: #ffffff; /* on the photo, not the cream card */
+}
+
+.card-content {
+    padding: 1.25rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content h2 {
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+}
+
+.meta-date {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.6rem;
+    font-weight: 700;
+}
+
+.card-content .mood-tag {
+    align-self: flex-start;
+    background: color-mix(in srgb, var(--ink) 7%, transparent);
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+}
+
+.mood-icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+}
+
+.card-content .greeting {
+    margin-bottom: 1rem;
+    line-height: 1.35;
+}
+
+.greeting-native {
+    display: block;
+    text-align: left; /* Hebrew and Arabic greetings line up with the rest of the card */
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-size: 1.5rem; /* 24px is WCAG "large text", so every festival colour passes (lowest: Holi, 4.3:1 on cream) */
+    color: var(--c);
+}
+
+.greeting-gloss {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+}
+
+.card-content p {
+    font-size: 0.97rem;
+    color: var(--ink-soft);
+    margin-bottom: 1.8rem;
+}
+
+.card-btn {
+    align-self: flex-start;
+    background-color: var(--ink);
+    color: var(--cream);
+    padding: 0.6rem 1.3rem;
+    text-decoration: none;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.card-btn:hover {
+    background-color: var(--gold);
+    color: var(--ink);
+}
+
+/* Reading view (#<id>/about): the panel widens and shows the festival's long read */
+.info-panel.is-reading {
+    width: min(640px, calc(100% - 340px));
+}
+
+.info-panel:not(.is-reading) .festival-about,
+.info-panel.is-reading .card-btn[href$="/about"] {
+    display: none;
+}
+
+.festival-about h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+}
+
+.festival-about .about-dates {
+    margin: -1rem 0 1.8rem 1.2rem;
+    color: var(--ink-soft);
+}
+
+.festival-about a {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+/* Cream surface: dark focus ring so it stays visible in both themes */
+.festival-card :focus-visible {
+    outline-color: var(--ink);
+}
+
+.site-footer a {
+    color: inherit;
+}
+
+.site-footer {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    color: var(--text-muted);
+    background: var(--surface-bar);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--line);
+}
+
+/* Medium screens: the list would crowd the globe, so it narrows */
+@media (max-width: 1100px) {
+    .hero-side {
+        width: 230px;
+    }
+
+    .hero-intro h1 {
+        font-size: 1.6rem;
+    }
+
+    /* Centre the globe in the space right of the list (half the column: 230px + 2rem margin) */
+    #globe-container {
+        transform: translateX(131px);
+    }
+}
+
+@media (max-width: 720px) {
+    /* Intro on top, festival list becomes a scrolling row at the bottom */
+    .hero-side {
+        top: 1rem;
+        left: 0;
+        right: 0;
+        bottom: 1rem;
+        width: auto;
+        justify-content: space-between;
+    }
+
+    .hero-intro {
+        padding: 0 1rem;
+    }
+
+    .hero-intro h1 {
+        font-size: 1.5rem;
+    }
+
+    /* The row speaks for itself, and the Pins switch would crowd it */
+    .festival-list-heading,
+    .pin-style {
+        display: none;
+    }
+
+    #globe-container {
+        transform: none;
+    }
+
+    .festival-list {
+        margin-left: 0;
+        overflow-x: auto;
+        overflow-y: visible;
+        mask-image: none;
+        direction: ltr; /* rtl here would start the row scrolled to its far end */
+    }
+
+    .festival-list ul {
+        flex-direction: row;
+        padding: 2px 1rem;
+        width: max-content;
+    }
+
+    .region-btn {
+        width: auto;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .region-btn:hover {
+        transform: none;
+    }
+
+    .globe-hero.panel-open #globe-container {
+        transform: translateY(-28%);
+    }
+
+    .globe-hero.panel-open .hero-intro,
+    .globe-hero.panel-open .festival-list {
+        visibility: hidden;
+    }
+
+    /* Panel becomes a bottom sheet so the globe stays visible above it */
+    .info-panel {
+        top: auto;
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        width: auto;
+        max-width: none;
+        max-height: 60%;
+        transform: translateY(calc(100% + 1rem));
+    }
+
+    .info-panel.is-reading {
+        width: auto;
+        max-height: 85%;
+    }
+
+    .card-image-wrap {
+        height: 150px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}

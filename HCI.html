@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Cultural Festivals & Celebrations</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%234fb0c6' stroke='%232b1a3d' stroke-width='2'/%3E%3Cpath d='M2 16h28M16 2c-5 4-5 24 0 28M16 2c5 4 5 24 0 28' fill='none' stroke='%232b1a3d' stroke-width='1.5'/%3E%3Ccircle cx='21' cy='11' r='3.5' fill='%23f2b84b' stroke='%232b1a3d' stroke-width='1.5'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="style.css">
+    <!-- Libraries and map data are bundled in vendor/ so the site works offline -->
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
+    <script src="vendor/topojson-client.min.js"></script>
+    <script src="vendor/world-data.js"></script>
+</head>
+<body>
+
+
+    <!-- 3D Globe Stage -->
+    <main class="globe-hero" id="globe-section">
+        <div id="globe-container" tabindex="0" role="application" aria-roledescription="globe" aria-label="Globe of festivals. Arrow keys turn it; Enter opens the festival facing you."></div>
+        <p id="globe-status" class="visually-hidden" aria-live="polite"></p>
+
+        <!-- Left column: intro + festival list (also the colour key for the pins) -->
+        <div class="hero-side">
+            <div class="hero-intro">
+                <h1 id="hero-title">A world of <span class="hero-name">festivals</span></h1>
+                <p>Spin the globe and follow the glowing pins, or choose a festival from the list, to step into a celebration.</p>
+            </div>
+
+            <h2 class="coming-up-heading festival-list-heading" id="festival-list-heading">All festivals</h2>
+            <nav class="festival-list" aria-labelledby="festival-list-heading">
+                <ul>
+                    <li><button class="region-btn" data-target="timkat"><span class="fl-name">Timkat</span><span class="fl-meta">Africa</span><span class="fl-month">January</span></button></li>
+                    <li><button class="region-btn" data-target="lunar-new-year"><span class="fl-name">Lunar New Year</span><span class="fl-meta">East Asia</span><span class="fl-month">Jan–Feb</span></button></li>
+                    <li><button class="region-btn" data-target="rio-carnival"><span class="fl-name">Rio Carnival</span><span class="fl-meta">Americas</span><span class="fl-month">Feb–Mar</span></button></li>
+                    <li><button class="region-btn" data-target="holi"><span class="fl-name">Holi</span><span class="fl-meta">South Asia</span><span class="fl-month">March</span></button></li>
+                    <li><button class="region-btn" data-target="songkran"><span class="fl-name">Songkran</span><span class="fl-meta">Southeast Asia</span><span class="fl-month">April</span></button></li>
+                    <li><button class="region-btn" data-target="vesak"><span class="fl-name">Vesak</span><span class="fl-meta">South Asia</span><span class="fl-month">May</span></button></li>
+                    <li><button class="region-btn" data-target="matariki"><span class="fl-name">Matariki</span><span class="fl-meta">Oceania</span><span class="fl-month">Jun–Jul</span></button></li>
+                    <li><button class="region-btn" data-target="osun-osogbo"><span class="fl-name">Osun-Osogbo</span><span class="fl-meta">Africa</span><span class="fl-month">August</span></button></li>
+                    <li><button class="region-btn" data-target="oktoberfest"><span class="fl-name">Oktoberfest</span><span class="fl-meta">Europe</span><span class="fl-month">Sep–Oct</span></button></li>
+                    <li><button class="region-btn" data-target="diwali"><span class="fl-name">Diwali</span><span class="fl-meta">South Asia</span><span class="fl-month">Oct–Nov</span></button></li>
+                    <li><button class="region-btn" data-target="dia-de-muertos"><span class="fl-name">Día de Muertos</span><span class="fl-meta">Americas</span><span class="fl-month">November</span></button></li>
+                    <li><button class="region-btn" data-target="hanukkah"><span class="fl-name">Hanukkah</span><span class="fl-meta">Middle East</span><span class="fl-month">December</span></button></li>
+                    <li><button class="region-btn" data-target="eid"><span class="fl-name">Eid al-Fitr</span><span class="fl-meta">Middle East</span><span class="fl-month">Varies</span></button></li>
+                </ul>
+            </nav>
+
+            <!-- Pin design, remembered per visitor (globe.js) -->
+            <fieldset class="pin-style">
+                <legend class="coming-up-heading">Pins</legend>
+                <label><input type="radio" name="pin-style" value="push"> Pushpin</label>
+                <label><input type="radio" name="pin-style" value="lantern"> Lantern</label>
+                <label><input type="radio" name="pin-style" value="flag"> Flag</label>
+            </fieldset>
+        </div>
+
+        <!-- Right column on the home view: filled from the festival data in globe.js -->
+        <aside class="coming-up" aria-label="Festival calendar">
+            <section>
+                <h2 class="coming-up-heading">Happening now</h2>
+                <ul id="coming-now"></ul>
+            </section>
+            <section>
+                <h2 class="coming-up-heading">Coming up</h2>
+                <ul id="coming-next"></ul>
+            </section>
+        </aside>
+
+        <!-- Pin name shown on hover -->
+        <div class="globe-tooltip" id="globe-tooltip" hidden></div>
+
+        <!-- Festival details panel (slides in beside the globe) -->
+        <aside class="info-panel" id="info-panel" aria-label="Festival details" aria-hidden="true">
+            <button id="back-home-btn" class="close-btn" aria-label="Close festival details">&times;</button>
+
+            <!-- South Asia: Diwali -->
+            <article class="festival-card" id="card-diwali" hidden>
+                <div class="card-image-wrap">
+                    <img src="Diwali-Diyas.jpg" alt="Clay oil lamps (diyas) burning in a ring of rangoli" class="card-img">
+                    <div class="badges"><span class="badge">South Asia</span><span class="badge">India</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Diya_set_in_a_rangoli.jpg" target="_blank" rel="noopener noreferrer">Photo: siddarth varanasi, CC BY 2.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Diwali, the Festival of Lights</h2>
+                    <p class="meta-date">Observed: October / November</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
+                    <p class="greeting"><span class="greeting-native" lang="hi">शुभ दीपावली</span> <span class="greeting-gloss"><i lang="hi-Latn">Shubh Deepavali</i>, “Happy Diwali”</span></p>
+                    <p>Diwali symbolizes the spiritual victory of light over darkness and good over evil. Families light traditional oil lamps (diyas) and create intricate floor patterns.</p>
+                    <a href="#diwali/about" class="card-btn">Read more about Diwali</a>
+                    <!-- Reading view, shown at #diwali/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Diwali, or Deepavali, means “row of lights”. For many Hindus it marks the return of Lord Rama to Ayodhya after defeating Ravana, and it honours Lakshmi, the goddess of prosperity. Jains mark the nirvana of Mahavira, Sikhs celebrate Bandi Chhor Divas, and some Buddhists observe it too.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>In much of India it runs over five days. Families clean and decorate their homes, wear new clothes, draw rangoli patterns at the door, light rows of clay lamps (diyas), pray to Lakshmi on the main night, and visit relatives with gifts. Fireworks light up the sky in many towns.</p>
+                        <h3>Food</h3>
+                        <p>Sweets (mithai) are shared with family, friends and neighbours: laddoos, barfi, kaju katli, jalebi and gulab jamun, along with savoury snacks such as chakli and namak para.</p>
+                        <h3>When</h3>
+                        <p>On the new moon of the Hindu month of Kartika, so the date moves each year; the main day can differ by one day between regions.</p>
+                        <ul class="about-dates">
+                            <li>2026: 8 November</li>
+                            <li>2027: 29 October</li>
+                            <li>2028: 17 October</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Across India and Nepal (where it is called Tihar), and in Sri Lanka, Singapore, Malaysia, Mauritius, Fiji, Trinidad and Tobago, Guyana and Suriname, as well as in Indian communities around the world.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Diwali" target="_blank" rel="noopener noreferrer">Diwali on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- East Asia: Lunar New Year -->
+            <article class="festival-card" id="card-lunar-new-year" hidden>
+                <div class="card-image-wrap">
+                    <img src="Lunar-Fireworks-Beijing.jpg" alt="Fireworks bursting over apartment blocks in Beijing on Chinese New Year’s Eve" class="card-img">
+                    <div class="badges"><span class="badge">East Asia</span><span class="badge">China</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Chinese_New_Year_fireworks_in_Xibeiwang,_Haidian,_Beijing_(20210212210709).jpg" target="_blank" rel="noopener noreferrer">Photo: N509FZ, CC BY-SA 4.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Lunar New Year</h2>
+                    <p class="meta-date">Observed: January / February</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
+                    <p class="greeting"><span class="greeting-native" lang="zh">新年快乐</span> <span class="greeting-gloss"><i lang="zh-Latn">Xīnnián kuàilè</i>, “Happy New Year”</span></p>
+                    <p>Marking the beginning of a new calendar cycle based on lunar phases, this festival features glowing red lanterns, energetic dragon dances, and family reunion dinners.</p>
+                    <a href="#lunar-new-year/about" class="card-btn">Read more about Lunar New Year</a>
+                    <!-- Reading view, shown at #lunar-new-year/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>The first day of the year in the Chinese lunisolar calendar, also called the Spring Festival (<span lang="zh">春节</span>, <i lang="zh-Latn">Chūnjié</i>). It is a time to see out the old year, welcome luck for the new one, honour ancestors and, above all, bring the family back together. Each year is linked to one of the twelve animals of the zodiac.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>Before the new year, homes are swept clean to clear away bad luck and decorated with red lanterns, paper cuttings and couplets on the doors. On New Year’s Eve families gather for a reunion dinner, often after long journeys home. Elders give red envelopes of money (hóngbāo) to children, firecrackers and fireworks scare off bad luck, and lion and dragon dances fill the streets. The celebrations last fifteen days and end with the Lantern Festival.</p>
+                        <h3>Food</h3>
+                        <p>Dishes are chosen for their lucky meanings: a whole fish, as “fish” (yú) sounds like “surplus”; dumplings (jiǎozi), shaped like old silver ingots, especially in the north; sticky rice cake (niángāo) for a “higher year”; and sweet rice balls (tāngyuán) at the Lantern Festival.</p>
+                        <h3>When</h3>
+                        <p>On the second new moon after the winter solstice, so it falls between 21 January and 20 February.</p>
+                        <ul class="about-dates">
+                            <li>2027: 6 February</li>
+                            <li>2028: 26 January</li>
+                            <li>2029: 13 February</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Across China, Hong Kong, Macau and Taiwan, and in Singapore, Malaysia and Indonesia. Vietnam celebrates Tết and Korea celebrates Seollal on or around the same day, and Chinese communities around the world mark it with parades and festivals.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Lunar_New_Year" target="_blank" rel="noopener noreferrer">Lunar New Year on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Middle East: Eid al-Fitr -->
+            <article class="festival-card" id="card-eid" hidden>
+                <div class="card-image-wrap">
+                    <img src="Eid-Bogor.jpg" alt="Worshippers in white gathered under the trees for Eid al-Fitr prayer in Bogor, Indonesia" class="card-img">
+                    <div class="badges"><span class="badge">Middle East</span><span class="badge">Worldwide</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Eid_Al-Fitr_2026.jpg" target="_blank" rel="noopener noreferrer">Photo: Winter3124, CC BY-SA 4.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Eid al-Fitr</h2>
+                    <p class="meta-date">Observed: Varies (Lunar Calendar)</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg> Celebrated by day</p>
+                    <p class="greeting"><span class="greeting-native" lang="ar" dir="rtl">عيد مبارك</span> <span class="greeting-gloss"><i lang="ar-Latn">Eid Mubarak</i>, “Blessed Eid”</span></p>
+                    <p>Marking the conclusion of Ramadan, Eid al-Fitr is a celebration focused on morning prayers, acts of charity, gift-giving, and festive communal meals. It is celebrated by Muslims worldwide.</p>
+                    <a href="#eid/about" class="card-btn">Read more about Eid al-Fitr</a>
+                    <!-- Reading view, shown at #eid/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Eid al-Fitr, the “Festival of Breaking the Fast”, marks the end of Ramadan, the month in which Muslims fast from dawn to sunset. It is a day of thanks to God for the strength to complete the fast, and of generosity, forgiveness and togetherness.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>The day begins with a special congregational prayer, held in mosques and open grounds shortly after sunrise. Before the prayer, Muslims give <i>zakat al-fitr</i>, a gift of food or money so that people in need can celebrate too. Families dress in new or their best clothes, visit relatives and friends, and children often receive gifts or money. In many countries the holiday lasts one to three days; in Indonesia, millions travel home for Lebaran.</p>
+                        <h3>Food</h3>
+                        <p>Sweets are so central that in Turkey the holiday is also called Şeker Bayramı, the “Sugar Festival”. Favourites include date-filled maamoul in the Levant and the Gulf, kahk biscuits in Egypt, sheer khurma (vermicelli cooked with milk and dates) in South Asia, and ketupat rice cakes with rendang in Indonesia and Malaysia.</p>
+                        <h3>When</h3>
+                        <p>On the first day of Shawwal, the tenth month of the Islamic lunar calendar. It begins when the new crescent moon is sighted, so the date can differ by a day between countries, and it moves about eleven days earlier each year. Expected dates (Umm al-Qura calendar):</p>
+                        <ul class="about-dates">
+                            <li>2027: about 9 March</li>
+                            <li>2028: about 26 February</li>
+                            <li>2029: about 14 February</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Muslims around the world, with public holidays across the Middle East, North Africa, Central, South and Southeast Asia. It is called Hari Raya Aidilfitri in Malaysia and Singapore and Lebaran in Indonesia, the country with the most Muslims.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Eid_al-Fitr" target="_blank" rel="noopener noreferrer">Eid al-Fitr on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Americas: Rio Carnival -->
+            <article class="festival-card" id="card-rio-carnival" hidden>
+                <div class="card-image-wrap">
+                    <img src="Rio-Sapucai.jpg" alt="Masked samba school dancers in green costumes parading in the Sambadrome" class="card-img">
+                    <div class="badges"><span class="badge">Americas</span><span class="badge">Brazil</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Escolas_de_samba_na_Sapuca%C3%AD_43.jpg" target="_blank" rel="noopener noreferrer">Photo: Tata Barreto/Agência Brasil, CC BY 3.0 BR</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Rio de Janeiro Carnival</h2>
+                    <p class="meta-date">Observed: February / March</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
+                    <p class="greeting"><span class="greeting-native" lang="pt">Bom Carnaval!</span> <span class="greeting-gloss">“Have a good Carnival”</span></p>
+                    <p>Considered the largest carnival in the world, this Brazilian celebration features vibrant Samba parades, extravagant costumes, lively street music, and dancing.</p>
+                    <a href="#rio-carnival/about" class="card-btn">Read more about Rio Carnival</a>
+                    <!-- Reading view, shown at #rio-carnival/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Carnival is the last celebration before Lent, the forty days of fasting before Easter in the Christian calendar. In Rio de Janeiro it grew into a celebration of samba, the music and dance born in the city’s Afro-Brazilian communities.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>Rio’s samba schools (<i lang="pt">escolas de samba</i>), each rooted in a neighbourhood, spend the whole year preparing. In the Sambadrome, designed by Oscar Niemeyer, each school parades for over an hour with thousands of dancers in costume, a drum section (<i lang="pt">bateria</i>) and huge floats, telling a theme through its own samba song, and judges pick a champion. Across the city, hundreds of free street parties (<i lang="pt">blocos</i>) fill the streets with music from morning to night.</p>
+                        <h3>Food</h3>
+                        <p>Carnival runs on street food: pastéis (fried pastries), grilled skewers, açaí and cold coconut water. Feijoada, Brazil’s black-bean and pork stew, is a favourite at samba-school gatherings.</p>
+                        <h3>When</h3>
+                        <p>From the Friday before Ash Wednesday to the Tuesday, so it moves with Easter and falls between early February and early March. The top twelve samba schools parade in the Sambadrome over the Sunday, Monday and Tuesday nights.</p>
+                        <ul class="about-dates">
+                            <li>2027: 5–9 February</li>
+                            <li>2028: 25–29 February</li>
+                            <li>2029: 9–13 February</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Rio de Janeiro, Brazil. Other Brazilian cities have famous carnivals of their own, such as Salvador, with music trucks called trios elétricos, and Recife and Olinda, with frevo dancing.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Rio_Carnival" target="_blank" rel="noopener noreferrer">Rio Carnival on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Europe: Oktoberfest -->
+            <article class="festival-card" id="card-oktoberfest" hidden>
+                <div class="card-image-wrap">
+                    <img src="Oktoberfest.jpg" alt="Oktoberfest celebration grounds in Munich" class="card-img">
+                    <div class="badges"><span class="badge">Europe</span><span class="badge">Germany</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:O%27zapft_is!_M%C3%BCnchens_5_Jahreszeit_hat_begonnen_-_O%27zapft_is!_Munich_5_season,_the_Oktoberfest_has_begun_(9855483374).jpg" target="_blank" rel="noopener noreferrer">Photo: Heribert Pohl, CC BY-SA 2.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Oktoberfest</h2>
+                    <p class="meta-date">Observed: September / October</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg> Celebrated by day</p>
+                    <p class="greeting"><span class="greeting-native" lang="bar">O’zapft is!</span> <span class="greeting-gloss">“It’s tapped!, the cry that opens the first barrel”</span></p>
+                    <p>Held annually in Munich, Germany, Oktoberfest is the world's largest Volksfest, featuring traditional Bavarian music, local foods, and cultural heritage events.</p>
+                    <a href="#oktoberfest/about" class="card-btn">Read more about Oktoberfest</a>
+                    <!-- Reading view, shown at #oktoberfest/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Oktoberfest began with the wedding of Crown Prince Ludwig of Bavaria and Princess Therese of Saxe-Hildburghausen on 12 October 1810. The people of Munich were invited to a horse race on a meadow named Theresienwiese after the bride, and the party became a yearly celebration of Bavarian culture.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>At noon on the first Saturday, the Mayor of Munich taps the first keg and cries “O’zapft is!”. The festival opens with a parade of the tent hosts and breweries, followed on Sunday by a parade of traditional costume groups and riflemen’s clubs. Visitors fill large beer tents run by Munich’s breweries, with brass bands, as well as fairground rides, and many wear Tracht: lederhosen and dirndls. About six million people come each year.</p>
+                        <h3>Food</h3>
+                        <p>Roast chicken (<i lang="de">Hendl</i>), pork knuckle, sausages, giant pretzels, Obatzda cheese spread, fish grilled on a stick (<i lang="de">Steckerlfisch</i>) and sugared roasted almonds. Beer from Munich’s breweries is served in one-litre mugs (<i lang="de">Maß</i>).</p>
+                        <h3>When</h3>
+                        <p>For about sixteen days, from a Saturday in mid or late September to the first Sunday in October. When that Sunday falls before 3 October, the festival runs on to German Unity Day on the 3rd.</p>
+                        <ul class="about-dates">
+                            <li>2027: 18 September – 3 October</li>
+                            <li>2028: 16 September – 3 October</li>
+                            <li>2029: 22 September – 7 October</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>On the Theresienwiese in Munich, Bavaria, Germany. Oktoberfests are held around the world, among the largest in Kitchener-Waterloo, Canada, and Blumenau, Brazil.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Oktoberfest" target="_blank" rel="noopener noreferrer">Oktoberfest on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Africa: Timkat -->
+            <article class="festival-card" id="card-timkat" hidden>
+                <div class="card-image-wrap">
+                    <img src="Timkat-Crowd.jpg" alt="Crowds dressed in white at a Timkat celebration in Ethiopia" class="card-img">
+                    <div class="badges"><span class="badge">Africa</span><span class="badge">Ethiopia</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Ethiopian_Timket_Celebration.jpg" target="_blank" rel="noopener noreferrer">Photo: Khajitdadddy, CC BY-SA 4.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Timkat (Ethiopian Epiphany)</h2>
+                    <p class="meta-date">Observed: January</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg> Celebrated by day</p>
+                    <p class="greeting"><span class="greeting-native" lang="am">መልካም የጥምቀት በዓል</span> <span class="greeting-gloss"><i lang="am-Latn">Melkam Yetimket Beal</i>, “Happy Timkat”</span></p>
+                    <p>Timkat is the celebration of the baptism of Jesus Christ in Ethiopia. It is renowned for vibrant processions, traditional hymns, and colorful ceremonial attire.</p>
+                    <a href="#timkat/about" class="card-btn">Read more about Timkat</a>
+                    <!-- Reading view, shown at #timkat/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Timkat is the Ethiopian Orthodox Tewahedo Church’s celebration of Epiphany, the baptism of Jesus in the River Jordan. UNESCO lists Ethiopian Epiphany as Intangible Cultural Heritage.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>On the eve, called Ketera, priests carry each church’s <i lang="am-Latn">tabot</i>, a replica of the tablets of the Ark of the Covenant wrapped in rich cloth, on their heads in procession to a nearby river or pool. The faithful, dressed in white, keep an all-night vigil of prayer and hymns. At dawn the water is blessed and sprinkled over the crowd, and some people plunge in to renew their baptismal vows. The tabots then return to their churches with singing, dancing and drums.</p>
+                        <h3>Food</h3>
+                        <p>After the fast on the eve, families share a feast: injera with doro wat, a spiced chicken stew, along with dabo (bread) and tella, a home-brewed beer.</p>
+                        <h3>When</h3>
+                        <p>On 11 Ter in the Ethiopian calendar, which is 19 January, or 20 January in years when the Ethiopian calendar adds a leap day. The eve is the day before.</p>
+                        <ul class="about-dates">
+                            <li>2027: 19 January</li>
+                            <li>2028: 20 January</li>
+                            <li>2029: 19 January</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Throughout Ethiopia, with famous celebrations at Fasilides’ Bath in Gondar, at Jan Meda in Addis Ababa and in Lalibela. It is also celebrated in Eritrea and by Ethiopian and Eritrean Orthodox communities abroad.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Timkat" target="_blank" rel="noopener noreferrer">Timkat on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- South Asia: Holi -->
+            <article class="festival-card" id="card-holi" hidden>
+                <div class="card-image-wrap">
+                    <img src="Holi.jpg" alt="Crowd celebrating Holi, covered in red colour powder" class="card-img">
+                    <div class="badges"><span class="badge">South Asia</span><span class="badge">India</span><span class="badge">Nepal</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Colour_celebration_in_Holi_festival.jpg" target="_blank" rel="noopener noreferrer">Photo: Avra10, CC BY-SA 4.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Holi, the Festival of Colours</h2>
+                    <p class="meta-date">Observed: March</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg> Celebrated by day</p>
+                    <p class="greeting"><span class="greeting-native" lang="hi">होली की शुभकामनाएँ</span> <span class="greeting-gloss"><i lang="hi-Latn">Holi ki shubhkamnayein</i>, “Best wishes for Holi”</span></p>
+                    <p>Holi welcomes spring and celebrates the triumph of good over evil. People throw coloured powder and water at friends and strangers alike, share sweets, and dance in the streets.</p>
+                    <a href="#holi/about" class="card-btn">Read more about Holi</a>
+                    <!-- Reading view, shown at #holi/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Holi is the Hindu festival of spring and colours. It celebrates the end of winter and the triumph of good over evil, remembering how the young devotee Prahlad was saved from the fire when his aunt Holika tried to burn him. It also recalls the playful love of Krishna and Radha.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>On the first evening, Holika Dahan, bonfires are lit to burn away evil. The next morning people chase each other through the streets with coloured powder (<i lang="hi-Latn">gulal</i>) and coloured water, with water pistols and balloons, singing and dancing to drums; everyday social rules are relaxed. In the afternoon people wash, dress up and visit friends and family. In the Braj region around Mathura and Vrindavan, linked to Krishna, celebrations go on for more than a week.</p>
+                        <h3>Food</h3>
+                        <p>Gujiya, fried pastries filled with sweetened milk solids and dried fruit, are the classic Holi sweet, alongside malpua (sweet pancakes), dahi vada (lentil dumplings in yoghurt) and thandai, a chilled milk drink spiced with almonds, fennel and cardamom.</p>
+                        <h3>When</h3>
+                        <p>On the full moon of the Hindu month of Phalguna, in late February or March, with the bonfire the evening before. Regional calendars can differ by a day. Dates of the colour day:</p>
+                        <ul class="about-dates">
+                            <li>2027: 22 March</li>
+                            <li>2028: 11 March</li>
+                            <li>2029: 28 February</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Across India and Nepal, and in Indian communities around the world, including Mauritius, Fiji and the UK. In Guyana, Trinidad and Tobago and Suriname it is called Phagwah.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Holi" target="_blank" rel="noopener noreferrer">Holi on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Southeast Asia: Songkran -->
+            <article class="festival-card" id="card-songkran" hidden>
+                <div class="card-image-wrap">
+                    <img src="Songkran.jpg" alt="Families splashing each other with water during Songkran in Chiang Mai" class="card-img">
+                    <div class="badges"><span class="badge">Southeast Asia</span><span class="badge">Thailand</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Chiang-Mai_Thailand_Songkran-Festival-2017-02.jpg" target="_blank" rel="noopener noreferrer">Photo: CEphoto, Uwe Aranas, CC BY-SA 4.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Songkran</h2>
+                    <p class="meta-date">Observed: 13–15 April</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg> Celebrated by day</p>
+                    <p class="greeting"><span class="greeting-native" lang="th">สุขสันต์วันสงกรานต์</span> <span class="greeting-gloss"><i lang="th-Latn">Suk san wan Songkran</i>, “Happy Songkran”</span></p>
+                    <p>The Thai New Year is a time to visit family and temples and to pour scented water over elders’ hands for blessings. In the streets it becomes a nationwide water fight.</p>
+                    <a href="#songkran/about" class="card-btn">Read more about Songkran</a>
+                    <!-- Reading view, shown at #songkran/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Songkran is the traditional Thai New Year, when the sun passes into Aries; the name comes from the Sanskrit <i lang="sa-Latn">saṅkrānti</i>, “passing”. It is a time of cleansing, making merit and honouring elders, and UNESCO lists it as Intangible Cultural Heritage.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>Families clean their homes, visit temples to give food to monks, build small sand stupas in temple grounds and pour scented water over Buddha images. In the ceremony of <i lang="th-Latn">rot nam dam hua</i>, younger people pour water over their elders’ hands to ask for blessings. In the streets, the water turns into a nationwide water fight with buckets and water guns, and people dab each other’s cheeks with white clay paste. Chiang Mai is especially famous for it.</p>
+                        <h3>Food</h3>
+                        <p>Khao chae, rice served in chilled jasmine-scented water with small side dishes, is the classic dish of the hot season and Songkran, along with Thai sweets shared with family and given to monks.</p>
+                        <h3>When</h3>
+                        <p>Every year on 13 to 15 April, a national holiday in Thailand.</p>
+                        <ul class="about-dates">
+                            <li>2027: 13–15 April</li>
+                            <li>2028: 13–15 April</li>
+                            <li>2029: 13–15 April</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Across Thailand. Neighbouring countries celebrate their New Year at the same time: Pi Mai in Laos, Thingyan in Myanmar and Choul Chnam Thmey in Cambodia, as do the Dai people of Yunnan in China.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Songkran_(Thailand)" target="_blank" rel="noopener noreferrer">Songkran on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Americas: Día de Muertos -->
+            <article class="festival-card" id="card-dia-de-muertos" hidden>
+                <div class="card-image-wrap">
+                    <img src="Muertos.jpg" alt="Ofrenda altar above a sand carpet of painted skulls in Oaxaca" class="card-img">
+                    <div class="badges"><span class="badge">Americas</span><span class="badge">Mexico</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Ofrenda_y_ofrenda_en_tapete_Oaxaque%C3%B1o.jpg" target="_blank" rel="noopener noreferrer">Photo: Luisroj96, CC BY-SA 3.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Día de Muertos</h2>
+                    <p class="meta-date">Observed: 1–2 November</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
+                    <p class="greeting"><span class="greeting-native" lang="es">¡Feliz Día de Muertos!</span> <span class="greeting-gloss">“Happy Day of the Dead”</span></p>
+                    <p>Families welcome back the souls of loved ones with ofrendas, home altars of marigolds, candles, photos and favourite foods, and keep candlelit vigils in cemeteries.</p>
+                    <a href="#dia-de-muertos/about" class="card-btn">Read more about Día de Muertos</a>
+                    <!-- Reading view, shown at #dia-de-muertos/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Día de Muertos, the Day of the Dead, is a time when families believe the souls of their loved ones return to visit. Rather than a time of mourning, it is a joyful remembrance. It blends Indigenous traditions of honouring the dead with the Catholic feasts of All Saints’ and All Souls’ Day, and UNESCO lists it as Intangible Cultural Heritage.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>Families build ofrendas, home altars with photos of the dead, candles, copal incense, papel picado and their loved ones’ favourite food and drink. Orange marigolds (cempasúchil) line paths of petals to guide the souls home. Families clean and decorate graves and keep candlelit vigils in cemeteries, and people dress as La Catrina, the elegant skeleton lady. Mexico City has held a large parade since 2016.</p>
+                        <h3>Food</h3>
+                        <p>Pan de muerto, a sweet bread topped with dough “bones”; sugar skulls (calaveras de azúcar) with the names of the living and the dead; tamales, mole, and hot chocolate or atole. The ofrenda also holds the dishes and drinks the dead enjoyed in life.</p>
+                        <h3>When</h3>
+                        <p>Every year on 1 and 2 November. The first day is often for children who have died and the second for adults; in some regions preparations begin in late October.</p>
+                        <ul class="about-dates">
+                            <li>2026: 1–2 November</li>
+                            <li>2027: 1–2 November</li>
+                            <li>2028: 1–2 November</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Throughout Mexico, with some of the best-known celebrations in Oaxaca, Michoacán (around Lake Pátzcuaro) and Mexico City, and in Mexican communities in the United States and around the world.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Day_of_the_Dead" target="_blank" rel="noopener noreferrer">Day of the Dead on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Middle East: Hanukkah -->
+            <article class="festival-card" id="card-hanukkah" hidden>
+                <div class="card-image-wrap">
+                    <img src="Hanukkah-Nachlaot.jpg" alt="A lit Hanukkah menorah in a glass case outside a house in Nachlaot, Jerusalem" class="card-img">
+                    <div class="badges"><span class="badge">Middle East</span><span class="badge">Worldwide</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:108764_hanukkah_in_nachalot_in_jerusalem_PikiWiki_Israel.jpg" target="_blank" rel="noopener noreferrer">Photo: <bdi lang="he">שלמה רודד</bdi> (PikiWiki Israel), CC BY 2.5</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Hanukkah</h2>
+                    <p class="meta-date">Observed: December, for eight nights</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
+                    <p class="greeting"><span class="greeting-native" lang="he" dir="rtl">חג חנוכה שמח</span> <span class="greeting-gloss"><i lang="he-Latn">Chag Hanukkah sameach</i>, “Happy Hanukkah”</span></p>
+                    <p>Each evening for eight nights, families light one more flame on the menorah to remember the rededication of the Second Temple in Jerusalem, and share fried foods like latkes and doughnuts.</p>
+                    <a href="#hanukkah/about" class="card-btn">Read more about Hanukkah</a>
+                    <!-- Reading view, shown at #hanukkah/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Hanukkah, Hebrew for “dedication”, remembers the rededication of the Second Temple in Jerusalem in the 2nd century BCE, after the Maccabees’ revolt against the Seleucid Empire. Tradition tells that one day’s supply of pure oil kept the Temple’s lamp burning for eight days.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>Each night for eight nights, families light the hanukkiah, a nine-branched menorah, adding one light each night, lit from the helper candle (<i lang="he-Latn">shamash</i>). They say blessings, sing songs such as Ma’oz Tzur and place the menorah in a window to share the miracle. Children play with the dreidel, a spinning top, and receive gelt, coins of money or chocolate.</p>
+                        <h3>Food</h3>
+                        <p>Foods fried in oil, recalling the miracle: latkes (potato pancakes), sufganiyot (jam-filled doughnuts, especially popular in Israel) and, in many Sephardi homes, bimuelos (fritters).</p>
+                        <h3>When</h3>
+                        <p>From the 25th of Kislev in the Hebrew calendar, usually in December. Jewish days begin at sundown, so the first candle is lit on the evening the dates below begin.</p>
+                        <ul class="about-dates">
+                            <li>2026: 4–12 December</li>
+                            <li>2027: 24 December – 1 January 2028</li>
+                            <li>2028: 12–20 December</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Jewish communities around the world, with public menorah lightings in many cities. In Israel schools close for the holiday.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Hanukkah" target="_blank" rel="noopener noreferrer">Hanukkah on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- South Asia: Vesak -->
+            <article class="festival-card" id="card-vesak" hidden>
+                <div class="card-image-wrap">
+                    <img src="Vesak-Pandal.jpg" alt="A brightly painted Vesak pandal in Piliyandala, Sri Lanka, with a seated Buddha at its centre" class="card-img">
+                    <div class="badges"><span class="badge">South Asia</span><span class="badge">Sri Lanka</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Piliyandala_vesak_pandol_2017.jpg" target="_blank" rel="noopener noreferrer">Photo: Varuna Harshana, CC BY-SA 4.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Vesak, Buddha Day</h2>
+                    <p class="meta-date">Observed: May (full moon)</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
+                    <p class="greeting"><span class="greeting-native" lang="si">සුබ වෙසක්</span> <span class="greeting-gloss"><i lang="si-Latn">Suba Vesak</i>, “Happy Vesak”</span></p>
+                    <p>On the full moon of May, Buddhists remember the birth, enlightenment and passing of the Buddha. In Sri Lanka, streets glow with paper lanterns and huge illuminated pandals, and roadside stalls called dansal give free food and drink to everyone who passes.</p>
+                    <a href="#vesak/about" class="card-btn">Read more about Vesak</a>
+                    <!-- Reading view, shown at #vesak/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Vesak, also called Buddha Purnima or Buddha Jayanti, marks three events that Theravada Buddhists hold took place on the same full moon: the Buddha’s birth in Lumbini, his enlightenment at Bodh Gaya and his passing into parinirvana at Kushinagar. The United Nations has recognised the Day of Vesak since 1999.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>Buddhists visit temples to offer flowers, candles and incense, listen to sermons, meditate, and many take extra precepts for the day. In Sri Lanka, homes and streets are hung with paper and bamboo lanterns (<i lang="si-Latn">Vesak kuduwa</i>), and towering pandals (<i lang="si-Latn">thoran</i>) light up with paintings of stories from the Buddha’s past lives, often with devotional songs. Elsewhere, people pour water over statues of the infant Buddha or walk in candlelit processions, as at Borobudur in Indonesia.</p>
+                        <h3>Food</h3>
+                        <p>Generosity is at the heart of the day. In Sri Lanka, volunteers run dansal that hand out free rice and curry, kola kenda (a green herbal porridge), tea, ice coffee and sweets to anyone, and many people avoid meat on Vesak.</p>
+                        <h3>When</h3>
+                        <p>On the full moon of the month of Vesakha, usually in May. Countries follow different lunar calendars, so some mark it on a different day, occasionally in April or June. In Sri Lanka, Vesak Poya in 2027 falls on 19 May; later dates are set in the country’s official holiday calendar.</p>
+                        <h3>Where</h3>
+                        <p>Across Sri Lanka, Nepal and India, and in Thailand (Visakha Bucha), Myanmar, Laos, Cambodia, Malaysia, Singapore and Indonesia (Waisak), as well as in Buddhist communities around the world. Many East Asian Buddhists celebrate the Buddha’s birthday on a different date.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Vesak" target="_blank" rel="noopener noreferrer">Vesak on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Oceania: Matariki -->
+            <article class="festival-card" id="card-matariki" hidden>
+                <div class="card-image-wrap">
+                    <img src="Matariki.jpg" alt="Crowds and lanterns at the Ahi Kā Matariki fire festival in Wellington" class="card-img">
+                    <div class="badges"><span class="badge">Oceania</span><span class="badge">New Zealand</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Ahi_K%C4%81_(8).jpg" target="_blank" rel="noopener noreferrer">Photo: Kristina D.C. Hoeppner, CC BY-SA 2.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Matariki, the Māori New Year</h2>
+                    <p class="meta-date">Observed: June / July</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
+                    <p class="greeting"><span class="greeting-native" lang="mi">Mānawatia a Matariki</span> <span class="greeting-gloss">“Celebrate Matariki”</span></p>
+                    <p>When the Matariki star cluster (the Pleiades) rises in the pre-dawn sky, Māori mark the new year by remembering those who have died, celebrating the present and planning for the year ahead. It has been a public holiday in New Zealand since 2022.</p>
+                    <a href="#matariki/about" class="card-btn">Read more about Matariki</a>
+                    <!-- Reading view, shown at #matariki/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>Matariki is the Māori name for the Pleiades star cluster. Its rising in the pre-dawn sky in midwinter marks the Māori new year. It is a time to remember those who have died since the last rising, to celebrate the present with family and friends, and to plan for the year ahead. Some iwi (tribes) follow the star Puanga (Rigel) instead, where Matariki is hard to see.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>People gather before dawn to watch the stars rise and call the names of those who have died. In the <i lang="mi">whāngai i te hautapu</i> ceremony, food is cooked in an earth oven and its steam is offered to the stars. Whānau (families) come together to share food, music and stories, fly kites, and enjoy light festivals and fireworks, like the Ahi Kā fire festival in Wellington.</p>
+                        <h3>Food</h3>
+                        <p>Shared kai (food) is at the heart of Matariki: hāngī cooked in an earth oven, kaimoana (seafood) and kūmara (sweet potato), whose harvest was stored by this time of year. The stars were once read to predict how the coming season’s crops would grow.</p>
+                        <h3>When</h3>
+                        <p>In June or July, following the maramataka, the Māori lunar calendar. The public holiday is always a Friday, set in law until 2052. Public holiday dates:</p>
+                        <ul class="about-dates">
+                            <li>2027: 25 June</li>
+                            <li>2028: 14 July</li>
+                            <li>2029: 6 July</li>
+                        </ul>
+                        <h3>Where</h3>
+                        <p>Across Aotearoa New Zealand, where it has been a public holiday since 2022.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Matariki" target="_blank" rel="noopener noreferrer">Matariki on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Africa: Osun-Osogbo -->
+            <article class="festival-card" id="card-osun-osogbo" hidden>
+                <div class="card-image-wrap">
+                    <img src="Osun-Arugba.jpg" alt="The veiled Arugba carried in procession to the Osun river, surrounded by worshippers in white" class="card-img">
+                    <div class="badges"><span class="badge">Africa</span><span class="badge">Nigeria</span></div>
+                    <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Arugb%C3%A1_%E1%BB%8C%CC%80%E1%B9%A3un_in_Procession.jpg" target="_blank" rel="noopener noreferrer">Photo: Mayowamayowamayowa, CC BY-SA 4.0</a>
+                </div>
+                <div class="card-content">
+                    <h2 tabindex="-1">Osun-Osogbo Festival</h2>
+                    <p class="meta-date">Observed: August</p>
+                    <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg> Celebrated by day</p>
+                    <p class="greeting"><span class="greeting-native" lang="yo">Ẹ kú ọdún</span> <span class="greeting-gloss">“Happy festival”, the Yoruba festive greeting</span></p>
+                    <p>Each August, worshippers and visitors process to the Osun river in the Osun-Osogbo Sacred Grove, a UNESCO World Heritage Site, to honour Osun, the Yoruba goddess of fertility and rivers. A young woman, the Arugba, carries the offering to the river amid drumming, dancing and prayer.</p>
+                    <a href="#osun-osogbo/about" class="card-btn">Read more about Osun-Osogbo</a>
+                    <!-- Reading view, shown at #osun-osogbo/about -->
+                    <section class="festival-about">
+                        <h3 tabindex="-1">What it celebrates</h3>
+                        <p>The festival honours Osun (<span lang="yo">Ọ̀ṣun</span>), the Yoruba orisha (deity) of the river, fertility and love, in her sacred grove at Osogbo. It renews the bond said to have been made between Osun and the founders of the town, who settled by her river at her invitation. The grove, one of the last areas of primary high forest in southern Nigeria, is a UNESCO World Heritage Site, filled with shrines and sculptures.</p>
+                        <h3>How it’s celebrated</h3>
+                        <p>The festival runs for about two weeks of rites, including a ceremonial cleansing of the town, the lighting of a sixteen-point lamp and a gathering of the crowns of past kings. On the final day, the Arugba, a young woman, carries a calabash of offerings on her head from the palace to the river, followed by the king (the Ataoja of Osogbo), priests and crowds of worshippers and visitors with drumming, singing and dancing. People pray at the river and collect its water for blessings.</p>
+                        <h3>Food</h3>
+                        <p>Families and visitors share Yoruba festival dishes such as pounded yam with egusi soup, amala with ewedu and gbegiri soups, and akara (bean fritters).</p>
+                        <h3>When</h3>
+                        <p>Every August, over about two weeks. The exact dates are announced each year, and the grand procession to the river usually falls in the second half of the month.</p>
+                        <h3>Where</h3>
+                        <p>The Osun-Osogbo Sacred Grove in Osogbo, Osun State, Nigeria. Pilgrims come from across Nigeria and from the Yoruba diaspora, including Brazil and Cuba, where Osun is honoured as Oxum and Ochún.</p>
+                        <h3>Sources</h3>
+                        <p><a href="https://en.wikipedia.org/wiki/Osun-Osogbo" target="_blank" rel="noopener noreferrer">Osun-Osogbo on Wikipedia</a></p>
+                    </section>
+                </div>
+            </article>
+        </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>Global Cultural Atlas, an HCI project. Each festival’s reading view lists its sources. Map data from Natural Earth.</p>
+    </footer>
+
+    <!-- Interactive Globe Script -->
+    <script src="globe.js"></script>
+</body>
+</html>
