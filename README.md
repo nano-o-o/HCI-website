@@ -1,0 +1,49 @@
+# Global Cultural Atlas
+
+An interactive 3D globe for discovering festivals around the world, made as a class HCI project.
+
+**Live site:** https://nano-o-o.github.io/HCI-website/HCI.html
+
+Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Lunar New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated.
+
+## Festivals
+
+Timkat · Lunar New Year · Rio Carnival · Holi · Songkran · Vesak · Matariki · Osun-Osogbo · Oktoberfest · Diwali · Día de Muertos · Hanukkah · Eid al-Fitr
+
+## Features
+
+- A 3D globe with a pin for each festival; you can choose pushpin, lantern or flag pins
+- A year ring around the globe showing when each festival falls (desktop only)
+- "Happening now" and "Coming up" lists based on today's date
+- Day and night themes that follow the festival
+- Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
+- Keyboard support: the arrow keys turn the globe and Enter opens the festival facing you
+- Layouts for desktop, tablet and phone
+
+## Running it
+
+It's a static site with no build step. Download or clone the repo, then double-click `HCI.html` to open it in your browser.
+
+You can also serve it locally:
+
+    python -m http.server 8765
+
+and open http://localhost:8765/HCI.html.
+
+## Project structure
+
+| Path | What it is |
+|---|---|
+| `HCI.html` | Page structure, festival cards and reading views |
+| `style.css` | Styles, day and night themes, festival colours |
+| `globe.js` | Globe, pins, year ring, festival data and navigation |
+| `DESIGN.md` | Design system: colours, type and layout rules |
+| `images/` | Festival photos |
+| `vendor/` | Bundled libraries, map data and fonts |
+
+## Credits
+
+- **Photos:** from Wikimedia Commons, under Creative Commons licences. Each photo's author and licence are credited on its card, with a link to the original file.
+- **three.js** r128 (MIT) for the globe
+- **topojson-client** 3.1.0 (ISC) and **Natural Earth** 1:110m country data (public domain, via world-atlas 2.0.2)
+- **Fonts:** Fraunces and Alegreya Sans (SIL Open Font License)
