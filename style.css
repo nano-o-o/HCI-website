@@ -67,27 +67,27 @@
     --festival-eid: #115e59;
     --festival-rio: #4d7c0f;
     --festival-oktoberfest: #2563eb;
-    --festival-timkat: #6d28d9;
+    --festival-timkat: #8b10d6;
     --festival-holi: #db2777;
     --festival-songkran: #0e7490;
     --festival-muertos: #9a3412;
-    --festival-hanukkah: #57534e;
+    --festival-hanukkah: #585e6e;
     --festival-matariki: #312e81;
     --festival-osun: #166534;
-    --festival-vesak: #9f1239;
+    --festival-vesak: #634d02;
     --glow-diwali: #fde047;
     --glow-lunar: #f87171;
     --glow-eid: #2dd4bf;
     --glow-rio: #a3e635;
     --glow-oktoberfest: #93c5fd;
-    --glow-timkat: #c4b5fd;
+    --glow-timkat: #d38ef9;
     --glow-holi: #f472b6;
     --glow-songkran: #67e8f9;
     --glow-muertos: #fdba74;
-    --glow-hanukkah: #d6d3d1;
+    --glow-hanukkah: #e2e8fb;
     --glow-matariki: #818cf8;
     --glow-osun: #86efac;
-    --glow-vesak: #fda4af;
+    --glow-vesak: #c89a02;
 
     --font-display: "Fraunces", Georgia, serif;
     --font-body: "Alegreya Sans", system-ui, sans-serif;
@@ -127,6 +127,8 @@
 
 html {
     scroll-behavior: smooth;
+    scrollbar-width: thin; /* the page's own scrollbar matches the list and panel ones */
+    scrollbar-color: var(--chip-border) transparent;
 }
 
 body {
@@ -140,7 +142,6 @@ body {
 
 /* Everything that changes colour with the theme fades like a sunset */
 body,
-.site-footer,
 .hero-intro h1,
 .hero-intro p,
 .fl-meta,
@@ -256,8 +257,76 @@ body,
 }
 
 /* Sits on the list's top edge: the list's own 1rem top padding gives the same heading-to-item space as the right column */
-.hero-side .festival-list-heading {
+.list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: -1.5rem;
+}
+
+.list-head .festival-list-heading {
+    margin-bottom: 0;
+}
+
+/* Region filter: a small pill on the heading line opens the region pills in a popover under it */
+.region-toggle,
+.region-filter button {
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    color: var(--text);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.15rem 0.65rem;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.region-toggle::after {
+    content: " \25BE";
+}
+
+.region-toggle:hover,
+.region-filter button:hover {
+    border-color: var(--accent-text);
+}
+
+.region-filter {
+    inset: auto; /* placed under the toggle by globe.js */
+    margin: 0;
+    width: 230px;
+    padding: 0.6rem;
+    border-radius: 12px;
+    background: var(--surface-bar);
+    border: 1px solid var(--chip-border);
+    color: var(--text);
+    box-shadow: 0 6px 24px rgba(242, 184, 75, 0.35);
+}
+
+.region-filter:popover-open {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.region-filter button {
+    padding: 0.25rem 0.75rem;
+}
+
+.region-filter button[aria-pressed="true"] {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--surface-bar);
+}
+
+/* Festivals outside the chosen region, like their pins */
+.festival-list li {
+    transition: opacity 0.2s ease;
+}
+
+.festival-list li.is-dimmed {
+    opacity: 0.3;
 }
 
 .festival-list {
@@ -490,13 +559,15 @@ body,
     pointer-events: auto;
     flex: none;
     border: none;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid; /* three pills per row */
+    grid-template-columns: repeat(3, max-content);
+    justify-items: start;
     gap: 0.35rem;
 }
 
 .pin-style legend {
-    float: left; /* a floated legend becomes a flex item, here a full-width row of its own */
+    float: left; /* a floated legend becomes a grid item, here a full-width row of its own */
+    grid-column: 1 / -1;
     width: 100%;
     margin-bottom: 0.25rem;
 }
@@ -620,9 +691,49 @@ body,
 }
 
 .card-img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* globe.js wraps each card photo in this button; it opens the photo viewer */
+.photo-open {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: zoom-in;
+}
+
+.photo-open:focus-visible {
+    outline-color: #ffffff;
+    outline-offset: -4px;
+}
+
+/* Uncropped photo on a dimmed page, with the same close button and credit pill as the card */
+.photo-viewer {
+    margin: auto;
+    padding: 0;
+    border: none;
+    background: none;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+    cursor: zoom-out;
+}
+
+.photo-viewer::backdrop {
+    background: color-mix(in srgb, var(--night-900) 88%, transparent);
+}
+
+.photo-viewer img {
+    display: block;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100dvh - 4rem);
+    border-radius: var(--radius);
 }
 
 #card-hanukkah .card-img {
@@ -639,6 +750,7 @@ body,
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 6px;
+    pointer-events: none; /* clicks reach the photo button underneath */
 }
 
 .badge {
@@ -786,17 +898,58 @@ body,
     outline-color: var(--ink);
 }
 
-.site-footer a {
-    color: inherit;
+/* About: a round chip in the stage's bottom-right corner (the details panel covers it when open) */
+.about-btn {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 10;
+    width: 34px;
+    height: 34px;
+    padding: 7px;
+    border-radius: 50%;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    color: var(--text);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background-color var(--theme-fade), color var(--theme-fade), border-color 0.2s ease;
 }
 
-.site-footer {
-    text-align: center;
-    padding: 2.5rem 1.5rem;
-    color: var(--text-muted);
-    background: var(--surface-bar);
-    font-size: 0.85rem;
-    border-top: 1px solid var(--line);
+.about-btn:hover {
+    border-color: var(--accent-text);
+}
+
+.about-btn svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* A small cream card like the festival cards; the backdrop matches the photo viewer */
+.about-dialog {
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--cream-edge);
+    border-radius: var(--radius);
+    background: var(--cream);
+    color: var(--ink);
+    max-width: min(22rem, calc(100vw - 2rem));
+    box-shadow: var(--lantern-shadow);
+}
+
+.about-dialog::backdrop {
+    background: color-mix(in srgb, var(--night-900) 70%, transparent);
+}
+
+.about-body {
+    padding: 3.75rem 1.5rem 1.5rem; /* the close button sits in the top-left, as on the cards */
+}
+
+.about-body h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    margin-bottom: 0.4rem;
 }
 
 /* Medium screens: the list would crowd the globe, so it narrows */
@@ -816,6 +969,13 @@ body,
 }
 
 @media (max-width: 720px) {
+    /* The festival strip and bottom sheet take the bottom edge, so About moves to the top-right */
+    .about-btn {
+        top: 1rem;
+        right: 1rem;
+        bottom: auto;
+    }
+
     /* Intro on top, festival list becomes a scrolling row at the bottom */
     .hero-side {
         top: 1rem;
@@ -835,7 +995,7 @@ body,
     }
 
     /* The row speaks for itself, and the Pins switch would crowd it */
-    .festival-list-heading,
+    .list-head,
     .pin-style {
         display: none;
     }

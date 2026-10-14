@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!container) return;
 
     // Saved pin style, checked before anything reads layout so its pill doesn't fade in on load
-    const PIN_STYLES = ["push", "lantern", "flag"];
+    const PIN_STYLES = ["push", "lantern", "flag", "marker", "candle", "firework"];
     let savedStyle = null;
     try { savedStyle = localStorage.getItem("pinStyle"); } catch (e) { /* storage blocked: use the default */ }
     const pinStyle = PIN_STYLES.includes(savedStyle) ? savedStyle : "push";
@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Each pin's origin is where the needle meets the surface and its +z points at the centre, so scaling grows it from that spot.
     // Children tagged `tint` take the pin's colour; every child follows its opacity.
     // The head mesh stays the same object whatever the style (it is the raycast target); `setPinStyle` swaps its
-    // geometry and material and adds that style's extra parts (pennant or lantern caps).
+    // geometry and material and adds that style's extra parts (needle, pennant, lantern caps, flame or rays).
     const pinObjects = [];
     const pinById = {};
     const NEEDLE = 7;
@@ -258,17 +258,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Pushpin: a glossy ball. Flag: a small finial with a pennant fixed to the pole, turning with the globe like a real flag
     // (seen straight down the pole, as for the selected pin, it narrows to a line). Lantern: a glowing paper lantern with dark caps.
+    // Marker: a map-style teardrop standing on its tip, no needle. Candle: a candle in the festival colour with a gold flame,
+    // no needle. Firework: a small ball bursting into rays.
+    // Marker profile: a circle (radius 2.4, centre 6.5 up) and the two lines from the tip that touch it, turned round the pole
+    const markerProfile = [new THREE.Vector2(0, 0)];
+    for (let a = Math.acos(2.4 / 6.5); a <= Math.PI + 1e-6; a += Math.PI / 16) markerProfile.push(new THREE.Vector2(2.4 * Math.sin(a), 6.5 - 2.4 * Math.cos(a)));
+    markerProfile.push(new THREE.Vector2(0, 6.5 + 2.4));
     const headGeo = {
         push: new THREE.SphereGeometry(2.3, 20, 20).translate(0, 0, -NEEDLE),
         flag: new THREE.SphereGeometry(0.7, 10, 10).translate(0, 0, -NEEDLE),
-        lantern: new THREE.SphereGeometry(2.2, 20, 16).scale(1, 1, 1.3).translate(0, 0, -NEEDLE - 1)
+        lantern: new THREE.SphereGeometry(2.2, 20, 16).scale(1, 1, 1.3).translate(0, 0, -NEEDLE - 1),
+        marker: new THREE.LatheGeometry(markerProfile, 24).rotateX(-Math.PI / 2),
+        candle: new THREE.CylinderGeometry(1.5, 1.5, 6, 20).rotateX(Math.PI / 2).translate(0, 0, -3),
+        firework: new THREE.SphereGeometry(1, 12, 12).translate(0, 0, -NEEDLE - 1)
     };
+    const flameGeo = new THREE.SphereGeometry(0.8, 12, 10).scale(1, 1, 1.9).translate(0, 0, -6 - 1.6);
+    const flameColor = new THREE.Color(token("--globe-night-halo"));
+    // Firework rays: tapered sticks from the ball's centre towards the 12 corners of an icosahedron, thick end outward
+    const rayGeo = new THREE.CylinderGeometry(0.35, 0.06, 3, 6).translate(0, 1.2 + 1.5, 0);
+    const rayDirs = [];
+    const icoPos = new THREE.IcosahedronGeometry(1, 0).attributes.position;
+    for (let i = 0; i < icoPos.count; i++) {
+        const v = new THREE.Vector3().fromBufferAttribute(icoPos, i).normalize();
+        if (!rayDirs.some((d) => d.distanceTo(v) < 1e-3)) rayDirs.push(v); // the geometry repeats corners per face
+    }
     // Outer cap is small so a lantern seen head-on (the selected one) still shows its glowing body
     const capGeos = [new THREE.CylinderGeometry(0.6, 0.6, 0.7, 12).rotateX(Math.PI / 2), new THREE.CylinderGeometry(1.1, 1.1, 0.7, 12).rotateX(Math.PI / 2)];
     // Pennant: a triangle in the plane of the pole and the pin's local x (east-west along the surface), hanging from the top of the pole
     const pennantGeo = new THREE.BufferGeometry();
     pennantGeo.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, -NEEDLE, 0, 0, -NEEDLE + 3.6, 6.5, 0, -NEEDLE + 1.4], 3));
     pennantGeo.computeVertexNormals();
+    // Invisible hit area round every head (about twice the pushpin's), so the small heads and thin needle are easy to click;
+    // it relies on the r128 raycaster hitting invisible meshes, and hitAt counts it as its pin
+    const hitGeo = new THREE.SphereGeometry(4.5, 8, 8).translate(0, 0, -NEEDLE - 0.5);
+    const hitMat = new THREE.MeshBasicMaterial();
 
     FESTIVALS.forEach((festival) => {
         const pos = latLongToVector3(festival.lat, festival.lon, globeRadius + 0.3);
@@ -279,12 +302,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const mats = {
             push: glossy,
             flag: glossy,
-            lantern: new THREE.MeshLambertMaterial({ color: dayColor.clone(), emissive: dayColor.clone(), transparent: true })
+            lantern: new THREE.MeshLambertMaterial({ color: dayColor.clone(), emissive: dayColor.clone(), transparent: true }),
+            marker: glossy,
+            candle: glossy,
+            firework: glossy
         };
         const pinMesh = new THREE.Mesh(headGeo.push, glossy);
         pinMesh.position.copy(pos);
         pinMesh.lookAt(new THREE.Vector3(0, 0, 0));
-        pinMesh.add(new THREE.Mesh(needleGeo, needleMat.clone()));
+        const needle = new THREE.Mesh(needleGeo, needleMat.clone());
+        const flame = new THREE.Mesh(flameGeo, new THREE.MeshBasicMaterial({ color: flameColor, transparent: true }));
+        const rays = rayDirs.map((dir) => {
+            const ray = new THREE.Mesh(rayGeo, new THREE.MeshBasicMaterial({ color: dayColor.clone(), transparent: true }));
+            ray.userData.tint = true;
+            ray.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+            ray.position.z = -NEEDLE - 1;
+            return ray;
+        });
+        const hitArea = new THREE.Mesh(hitGeo, hitMat);
+        hitArea.visible = false;
+        pinMesh.add(hitArea);
         const pennant = new THREE.Mesh(pennantGeo, new THREE.MeshBasicMaterial({ color: dayColor.clone(), side: THREE.DoubleSide, transparent: true }));
         pennant.userData.tint = true;
         const caps = [-NEEDLE - 1 - 2.9, -NEEDLE - 1 + 2.9].map((z, i) => {
@@ -293,7 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return cap;
         });
         // Extras are added and removed rather than hidden: the r128 raycaster also hits invisible objects
-        const extras = { push: [], flag: [pennant], lantern: caps };
+        const extras = { push: [needle], flag: [needle, pennant], lantern: [needle, ...caps], marker: [], candle: [flame], firework: [needle, ...rays] };
 
         const ringMesh = new THREE.Mesh(
             new THREE.RingGeometry(3.2, 4.5, 24),
@@ -314,7 +351,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const { mats, extras } = pin.userData;
             pin.geometry = headGeo[style];
             pin.material = mats[style];
-            PIN_STYLES.forEach((s) => extras[s].forEach((part) => (s === style ? pin.add(part) : pin.remove(part))));
+            PIN_STYLES.forEach((s) => extras[s].forEach((part) => pin.remove(part)));
+            extras[style].forEach((part) => pin.add(part)); // after removing all, as styles share the needle
         });
     }
 
@@ -438,6 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const festival = pin.userData.festival;
 
         setSelectedMonth(null);
+        setRegion(null);
         selectedPin = pin;
         focusPin(pin);
         drawMaps(festival);
@@ -597,6 +636,40 @@ document.addEventListener("DOMContentLoaded", () => {
         drawRing();
     }
 
+    // Region filter: built on the list's own region labels; dims the festivals (list items and pins) outside the chosen region
+    const regionOf = {};
+    regionButtons.forEach((btn) => {
+        regionOf[btn.dataset.target] = btn.querySelector(".fl-meta").textContent;
+    });
+    const regionToggle = document.querySelector(".region-toggle");
+    const regionFilter = document.getElementById("region-filter");
+    let selectedRegion = null;
+
+    function setRegion(region) {
+        selectedRegion = region;
+        regionToggle.textContent = `Region: ${region || "All"}`;
+        regionFilter.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.textContent === (region || "All")));
+        document.querySelectorAll(".festival-list li").forEach((li) => {
+            li.classList.toggle("is-dimmed", region !== null && regionOf[li.firstElementChild.dataset.target] !== region);
+        });
+    }
+
+    regionFilter.addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        setRegion(b.textContent === "All" ? null : b.textContent);
+        regionFilter.hidePopover();
+        regionToggle.focus();
+    });
+
+    // The popover lives in the top layer, so line it up under the toggle's right edge
+    regionFilter.addEventListener("beforetoggle", (e) => {
+        if (e.newState !== "open") return;
+        const r = regionToggle.getBoundingClientRect();
+        regionFilter.style.top = `${r.bottom + 6}px`;
+        regionFilter.style.right = `${document.documentElement.clientWidth - r.right}px`;
+    });
+
     container.addEventListener("pointerleave", () => {
         isHovering = false;
         hoveredPin = null;
@@ -614,7 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isHovering = obj !== null && obj !== yearRing; // pause over the globe only; it keeps spinning while you use the ring
         hoveredPin = obj && obj !== dayMap.mesh && obj !== yearRing ? obj : null;
         setHoveredMonth(month);
-        container.style.cursor = hoveredPin || month !== null ? "pointer" : "";
+        container.style.cursor = hoveredPin || month !== null ? "pointer" : isHovering ? "" : "default"; // "" is the stylesheet's grab hand
         let label = null;
         if (hoveredPin) {
             label = hoveredPin.userData.festival.label;
@@ -635,10 +708,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // OrbitControls cancels the browser's click-to-focus (and the canvas can't take focus), so focus the globe here
     // focusVisible: false keeps the ring for Tab focus only
     // (blur first: re-focusing an already Tab-focused globe would keep its keyboard ring and hold the spin)
-    container.addEventListener("pointerdown", () => {
+    // Dragging starts only on the globe or a pin: elsewhere the press is kept from OrbitControls (on the canvas inside),
+    // so clicks on the year ring and empty space still work but don't turn the globe
+    container.addEventListener("pointerdown", (event) => {
         container.blur();
         container.focus({ preventScroll: true, focusVisible: false });
-    });
+        const hit = hitAt(event);
+        if (!hit || hit.object === yearRing) event.stopPropagation();
+    }, true);
 
     container.addEventListener("click", (event) => {
         const hit = hitAt(event);
@@ -656,10 +733,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     closeBtn.addEventListener("click", closeFestival);
 
+    // Card photos open uncropped in a dialog, with their credit; a click anywhere but the credit closes it
+    const viewer = document.getElementById("photo-viewer");
+    const viewerImg = viewer.querySelector("img");
+    const viewerCredit = viewer.querySelector(".photo-credit");
+    document.querySelectorAll(".card-img").forEach((img) => {
+        const btn = document.createElement("button");
+        btn.className = "photo-open";
+        btn.setAttribute("aria-label", `View full photo: ${img.alt}`);
+        img.replaceWith(btn);
+        btn.append(img);
+        btn.addEventListener("click", () => {
+            const credit = btn.parentElement.querySelector(".photo-credit");
+            viewerImg.src = img.src;
+            viewerImg.alt = img.alt;
+            viewerCredit.href = credit.href;
+            viewerCredit.textContent = credit.textContent;
+            viewer.showModal();
+        });
+    });
+    viewer.addEventListener("click", (e) => {
+        if (!e.target.closest("a")) viewer.close();
+    });
+
+    // About dialog: the close button or a click on the backdrop closes it
+    const about = document.getElementById("about-dialog");
+    document.getElementById("about-btn").addEventListener("click", () => about.showModal());
+    about.addEventListener("click", (e) => {
+        if (e.target === about || e.target.closest(".close-btn")) about.close();
+    });
+
     document.addEventListener("keydown", (e) => {
-        if (e.key !== "Escape") return;
+        if (e.key !== "Escape" || document.querySelector("dialog[open], :popover-open")) return; // Escape closes an open photo, About or the region pills first, not the card
         if (selectedPin) closeFestival();
-        else setSelectedMonth(null);
+        else {
+            setSelectedMonth(null);
+            setRegion(null);
+        }
     });
 
     // Keyboard: arrows turn the globe, Enter opens the festival facing the viewer
@@ -794,11 +904,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Selected pin glows and pulses; the others dim to 30% and hold still.
-        // A hovered (or else selected) month on the year ring dims the festivals outside that month the same way.
+        // A hovered (or else selected) month on the year ring, or a chosen region, dims the festivals outside it the same way.
         const ringMonth = hoveredMonth ?? selectedMonth;
         pinObjects.forEach((pin, i) => {
             const { ring, dayColor, nightColor, festival } = pin.userData;
-            const dimmed = selectedPin ? pin !== selectedPin : ringMonth !== null && !festival.months.includes(ringMonth);
+            const dimmed = selectedPin
+                ? pin !== selectedPin
+                : (ringMonth !== null && !festival.months.includes(ringMonth)) || (selectedRegion !== null && regionOf[festival.id] !== selectedRegion);
             const swing = festival.months.includes(THIS_MONTH) ? 0.3 : 0.15; // festivals on now pulse more
             const pulse = reduceMotion || dimmed ? 1 : 1 + swing * Math.sin(t * 2.5 + i);
             pin.material.color.copy(dayColor).lerp(nightColor, nightMix);

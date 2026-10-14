@@ -43,27 +43,27 @@ colors:
   festival-eid: "#115e59"
   festival-rio: "#4d7c0f"
   festival-oktoberfest: "#2563eb"
-  festival-timkat: "#6d28d9"
+  festival-timkat: "#8b10d6"
   festival-holi: "#db2777"
   festival-songkran: "#0e7490"
   festival-muertos: "#9a3412"
-  festival-hanukkah: "#57534e"
+  festival-hanukkah: "#585e6e"
   festival-matariki: "#312e81"
   festival-osun: "#166534"
-  festival-vesak: "#9f1239"
+  festival-vesak: "#634d02"
   glow-diwali: "#fde047"
   glow-lunar: "#f87171"
   glow-eid: "#2dd4bf"
   glow-rio: "#a3e635"
   glow-oktoberfest: "#93c5fd"
-  glow-timkat: "#c4b5fd"
+  glow-timkat: "#d38ef9"
   glow-holi: "#f472b6"
   glow-songkran: "#67e8f9"
   glow-muertos: "#fdba74"
-  glow-hanukkah: "#d6d3d1"
+  glow-hanukkah: "#e2e8fb"
   glow-matariki: "#818cf8"
   glow-osun: "#86efac"
-  glow-vesak: "#fda4af"
+  glow-vesak: "#c89a02"
 typography:
   display:
     fontFamily: Fraunces
@@ -90,7 +90,7 @@ The site is a festival atlas with a 3D globe as the hero. It opens in a warm mor
 - **Accent:** `amber-text` by day and `gold` at night, for hovers. On light surfaces `gold` is decoration only, never text.
 - **Cards (`cream`, `ink*`):** the same paper card in both themes. Inside a card the focus ring is always `ink`.
 - **Globe (`globe-day-*`, `globe-night-*`):** both sets are always defined. The globe draws a day map and a night map and crossfades between them. The map has a faint 30° graticule and thin country borders in the coast colour; at night, stars (`on-night`) fade in behind it.
-- **Festival colours:** every festival owns one pair. `festival-*` is the only one allowed behind text (badges, the pressed list item) and is also the day pin and day country highlight. `glow-*` is the night pin and night country highlight. The thirteen pairs were chosen to stay as far apart as possible (smallest CIEDE2000 difference 13.4 in both themes), because the list is the pins' colour key; check a new festival's pair against the others before adding it. The selected pin's ring uses `ink` by day and white at night so it stands out against its own highlighted country.
+- **Festival colours:** every festival owns one pair. `festival-*` is the only one allowed behind text (badges, the pressed list item) and is also the day pin and day country highlight. `glow-*` is the night pin and night country highlight. The thirteen pairs were chosen to stay as far apart as possible (smallest CIEDE2000 difference 13.7 by day and 14.8 at night), because the list is the pins' colour key; check a new festival's pair against the others before adding it. The selected pin's ring uses `ink` by day and white at night so it stands out against its own highlighted country.
 - **Code ownership:** `style.css` `:root` is the only place these values live, and `globe.js` reads them from there.
 
 ## Themes
@@ -116,7 +116,7 @@ The page theme is the `data-theme` attribute on `<html>` (`day` by default, `nig
 
 ## Layout
 
-- **No header bar:** the globe stage fills the whole first screen; the footer sits below it.
+- **No header bar or footer:** the globe stage is the whole page, so the page doesn't scroll (except on screens shorter than the stage's 520px minimum). The site's credit line lives in the About dialog.
 - **Desktop:** the globe fills the stage. The left column holds the intro and the festival list. The details panel slides in on the right, and the globe shifts left so it stays centred between the list and the panel.
 - **Phones:** the intro sits at the top and the festival list becomes a horizontally scrolling row at the bottom. The panel becomes a bottom sheet, and the globe slides up above it.
 
@@ -135,14 +135,17 @@ Cards and the details panel use `rounded.base`. Festival list items use a smalle
 - **Festival pattern strip:** under each card's photo, a row of that festival's motif in its `festival-*` colour (diya flames, a fret, eight-point stars, sequin scallops, Bavarian lozenges, Ethiopian crosses, colour-powder splashes, water drops, papel picado, menorah flames, a star cluster, river waves, lotus flowers). The region and country pills on the photo take the festival colour (Eid and Hanukkah say "Worldwide"). It replaces the gold top edge, and is the one decorative flourish on the page.
 - **Copy:** no middle-dot meta strings and no arrows on links; the card link reads "Read more about <festival>" and opens the festival's reading view, which ends with its sources.
 - **Greeting:** under the mood tag, the festival's greeting in its own script and language (marked with `lang`), in its `festival-*` colour, with a transliteration and meaning beneath.
-- **Pins switch:** under the festival list, a "Pins" row of three pill radio buttons (Pushpin, Lantern, Flag) that changes the pin design. Pushpin is the default; the choice is remembered per visitor. Hidden on phones. The chosen pill fills with `text`. Flag pins carry a 3D pennant fixed to the pole, so it turns with the globe.
+- **Pins switch:** under the festival list, a "Pins" group of six pill radio buttons in two rows of three (Pushpin, Lantern, Flag; Marker, Candle, Firework) that changes the pin design. Pushpin is the default; the choice is remembered per visitor. Hidden on phones. The chosen pill fills with `text`. Flag pins carry a 3D pennant fixed to the pole, so it turns with the globe. Marker (a map-style teardrop) and Candle (a candle in the festival colour with a gold flame) stand on the surface without a needle; Firework is a small ball bursting into rays of the festival colour.
 - **Coming up:** on the home view, when the page is at least 1240px wide, the right column mirrors the festival list: "Happening now" (festivals in the current month) and "Coming up" (the next three by month), as copies of the list's buttons. Its first heading lines up with "All festivals", and it scrolls on short screens. It fades out while a festival is open, as the details panel takes its place.
 - **On now:** list items for festivals in the current month carry an "On now" pill in their colour, and their pins pulse twice as wide.
 - **Year ring:** on the home view, when the stage is at least 1100px wide, a calendar ring circles the globe: month names, a dot per festival in its month, and the current month in `accent-text`. Hovering a month dims the pins outside it to 30% and names its festivals in the tooltip. Clicking a month keeps that dimming (its arc turns `accent-text`) until the same month is clicked again, empty space is clicked, Escape is pressed or a festival opens; hovering another month still previews it. The globe keeps spinning while the pointer is on the ring. It fades out while a festival is open.
+- **Region filter:** on the "All festivals" heading line (hidden on phones), a small "Region: All" pill opens a drop-down of pill buttons: All plus the list's own region labels (Africa, Americas, East Asia, Europe, Middle East, Oceania, South Asia, Southeast Asia). Picking one dims the other list items and their pins to 30%, like the year ring, and the pill names the region. The chosen pill fills with `text`. Escape closes the drop-down first; Escape on the home view, or opening a festival, clears the region.
 - **Keyboard:** the globe is focusable. Arrow keys turn it, the pin facing the viewer is highlighted and announced, and Enter opens it. Clicking or tabbing to the globe focuses it; the globe's label names the keys for screen readers.
 - **Shareable links:** an open festival is `#<id>` in the address bar (`HCI.html#diwali`). Opening from home adds one history entry, so Back or the close button returns home; switching festivals replaces it.
 - **Reading view:** `#<id>/about` widens the panel into a long read (what it celebrates, how, food, dates, where, sources). It sits one history entry above the card, so Back returns to the card, and the close button becomes a back button there, drawn as a ">" chevron (the owner's choice).
+- **Photo viewer:** clicking a card photo (a button labelled "View full photo: <alt>") opens it uncropped in a modal dialog over a dimmed page, with the card's close button and credit pill. A click anywhere but the credit, or Escape, closes only the photo and returns focus to it.
 - **Credits:** photos from Wikimedia Commons are credited by author and licence in a small dark pill at the bottom-right of each card photo (linking to the file page).
-- **Scrollbars:** the festival list, the details panel and the right column use the same thin scrollbar (`chip-border`, `accent-text` on hover).
+- **Scrollbars:** the festival list, the details panel and the right column use the same thin scrollbar (`chip-border`, `accent-text` on hover). The page's own scrollbar (only on very short screens) matches it without the hover colour.
+- **About:** a round chip with an info icon (`chip-bg`, `chip-border`, `accent-text` border on hover) in the stage's bottom-right corner, top-right on phones; the details panel covers it when open. It opens a small cream card dialog with the site's credit line ("Global Cultural Atlas, an HCI project…"), closed by its close button, Escape or a click on the backdrop.
 - **Mood tag:** each card states "Celebrated at night" or "Celebrated by day", so the theme change has a visible reason. The sun and moon icons are inline SVG in `currentColor`, hidden from screen readers.
 - **Motion:** the globe spin, pin pulses, zoom, theme fade and panel slides all switch off under `prefers-reduced-motion`.

@@ -4,7 +4,7 @@ An interactive 3D globe for discovering festivals around the world, made as a cl
 
 **Live site:** https://nano-o-o.github.io/HCI-website/
 
-Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Lunar New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated.
+Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Lunar New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated. Clicking a card's photo shows the whole picture.
 
 ## Festivals
 
@@ -12,8 +12,9 @@ Timkat · Lunar New Year · Rio Carnival · Holi · Songkran · Vesak · Matarik
 
 ## Features
 
-- A 3D globe with a pin for each festival; you can choose pushpin, lantern or flag pins
+- A 3D globe with a pin for each festival; you can choose pushpin, lantern, flag, map marker, candle or firework pins
 - A year ring around the globe showing when each festival falls (desktop only)
+- A region filter that dims the festivals and pins outside the chosen region (desktop and tablet)
 - "Happening now" and "Coming up" lists based on today's date
 - Day and night themes that follow the festival
 - Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
