@@ -644,6 +644,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const regionToggle = document.querySelector(".region-toggle");
     const regionFilter = document.getElementById("region-filter");
     let selectedRegion = null;
+    // One pill per region in the list, so a new or renamed region needs no edit here
+    ["All", ...[...new Set(Object.values(regionOf))].sort()].forEach((name) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = name;
+        b.setAttribute("aria-pressed", name === "All");
+        regionFilter.append(b);
+    });
 
     function setRegion(region) {
         selectedRegion = region;
@@ -660,6 +668,14 @@ document.addEventListener("DOMContentLoaded", () => {
         setRegion(b.textContent === "All" ? null : b.textContent);
         regionFilter.hidePopover();
         regionToggle.focus();
+        // Dimming is visual only, so tell screen readers which festivals match
+        const names = FESTIVALS.filter((f) => regionOf[f.id] === selectedRegion).map((f) => f.label);
+        globeStatus.textContent = selectedRegion ? `${selectedRegion}: ${names.join(", ")}` : "Showing all festivals";
+    });
+
+    // Its position is only set on opening, so close it rather than leave it floating
+    window.addEventListener("resize", () => {
+        if (regionFilter.matches(":popover-open")) regionFilter.hidePopover();
     });
 
     // The popover lives in the top layer, so line it up under the toggle's right edge
