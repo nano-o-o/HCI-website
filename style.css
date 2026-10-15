@@ -133,7 +133,7 @@ html {
 
 body {
     font-family: var(--font-body);
-    font-size-adjust: 0.5; /* Alegreya Sans has a small x-height; match the old Nunito text size */
+    font-size-adjust: 0.5; /* Alegreya Sans has a small x-height; this evens out the text size */
     background-color: var(--surface-bar);
     color: var(--text);
     line-height: 1.6;
@@ -176,7 +176,7 @@ body,
     content: "";
     position: absolute;
     inset: 0;
-    /* Mirrors the day sky: deep indigo above, violet, a dim lantern glow at the horizon; soft glow behind the globe on top */
+    /* Mirrors the day sky: deep indigo at the top, violet, a dim lantern glow at the horizon, plus a soft glow behind the globe */
     background:
         radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--night-700) 70%, transparent) 0%, transparent 55%),
         linear-gradient(180deg, var(--night-sky-top) 0%, var(--night-sky-mid) 60%, var(--night-sky-bottom) 100%);
@@ -256,7 +256,7 @@ body,
     font-size: 0.95rem;
 }
 
-/* Sits on the list's top edge: the list's own 1rem top padding gives the same heading-to-item space as the right column */
+/* Overlaps the list's top edge, so the list's own 1rem top padding gives the same heading-to-item gap as the right column */
 .list-head {
     display: flex;
     align-items: center;

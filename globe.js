@@ -1,4 +1,4 @@
-// Muslim-majority countries (Pew Research estimates), named as in the Natural Earth data; lit faintly for Eid
+// Muslim-majority countries (Pew Research estimates), spelled as in the Natural Earth map data; lit faintly for Eid
 const MUSLIM_MAJORITY = ["Afghanistan", "Albania", "Algeria", "Azerbaijan", "Bangladesh", "Brunei", "Burkina Faso", "Chad", "Djibouti",
     "Egypt", "Gambia", "Guinea", "Indonesia", "Iran", "Iraq", "Jordan", "Kazakhstan", "Kosovo", "Kuwait", "Kyrgyzstan",
     "Lebanon", "Libya", "Malaysia", "Mali", "Mauritania", "Morocco", "Niger", "Oman", "Pakistan", "Palestine", "Qatar",
@@ -12,9 +12,9 @@ const NOW = new Date();
 const THIS_MONTH = NOW.getMonth();
 const EID_MONTHS = NOW.getFullYear() in EID_MONTH ? [EID_MONTH[NOW.getFullYear()]] : [];
 
-// Festival data: adding a festival = one entry here + its card and list item in HCI.html + its colour tokens and motif in style.css.
-// `color` names the token pair (--festival-<color> solid, --glow-<color> glow); `mood` picks the day or night theme;
-// `months` (0 = January) feed the "On now" label and the year ring.
+// To add a festival: add an entry here, a card and list item in HCI.html, and colour tokens and a motif in style.css.
+// `color` names the token pair (--festival-<color> by day, --glow-<color> at night); `mood` is the theme the festival opens in;
+// `months` (0 = January) drive the "On now" label and the year ring.
 const FESTIVALS = [
     { id: "diwali", label: "Diwali", lat: 20.5937, lon: 78.9629, color: "diwali", mood: "night", months: [9, 10], countries: ["India"] },
     { id: "lunar-new-year", label: "Lunar New Year", lat: 35.8617, lon: 104.1954, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("globe-container");
     if (!container) return;
 
-    // Saved pin style, checked before anything reads layout so its pill doesn't fade in on load
+    // Saved pin style, applied first so its pill doesn't fade in on load
     const PIN_STYLES = ["push", "lantern", "flag", "marker", "candle", "firework"];
     let savedStyle = null;
     try { savedStyle = localStorage.getItem("pinStyle"); } catch (e) { /* storage blocked: use the default */ }
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. Scene setup
     const scene = new THREE.Scene();
-    // Near plane at 10, not 0.1: nothing comes closer, and the extra depth precision stops the day and night maps flickering through each other
+    // Near plane is 10, not 0.1: nothing comes that close, and the better depth precision stops the day and night maps flickering through each other
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 10, 1000);
     camera.position.z = 220;
 
@@ -245,10 +245,10 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    // 5. Pins: festival colour by day, glow colour at night, standing on a thin needle.
-    // Each pin's origin is where the needle meets the surface and its +z points at the centre, so scaling grows it from that spot.
-    // Children tagged `tint` take the pin's colour; every child follows its opacity.
-    // The head mesh stays the same object whatever the style (it is the raycast target); `setPinStyle` swaps its
+    // 5. Pins: festival colour by day, glow colour at night.
+    // Each pin's origin is where its needle meets the surface, with +z pointing at the globe's centre, so scaling grows it from that spot.
+    // Children flagged `tint` take the pin's colour; all children follow its opacity.
+    // The head mesh is the same object in every style (it is the click target). `setPinStyle` swaps its
     // geometry and material and adds that style's extra parts (needle, pennant, lantern caps, flame or rays).
     const pinObjects = [];
     const pinById = {};
@@ -256,11 +256,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const needleGeo = new THREE.CylinderGeometry(0.22, 0.22, NEEDLE, 6).rotateX(Math.PI / 2).translate(0, 0, -NEEDLE / 2);
     const needleMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(token("--ink-muted")), shininess: 80, transparent: true });
 
-    // Pushpin: a glossy ball. Flag: a small finial with a pennant fixed to the pole, turning with the globe like a real flag
-    // (seen straight down the pole, as for the selected pin, it narrows to a line). Lantern: a glowing paper lantern with dark caps.
+    // Pushpin: a glossy ball. Flag: a pennant fixed to the pole, so it turns with the globe
+    // (seen straight down the pole, as on the selected pin, it narrows to a line). Lantern: a glowing paper lantern with dark caps.
     // Marker: a map-style teardrop standing on its tip, no needle. Candle: a candle in the festival colour with a gold flame,
     // no needle. Firework: a small ball bursting into rays.
-    // Marker profile: a circle (radius 2.4, centre 6.5 up) and the two lines from the tip that touch it, turned round the pole
+    // Marker outline, spun around the pole: a circle (radius 2.4, centre 6.5 up) plus the two lines from the tip that touch it
     const markerProfile = [new THREE.Vector2(0, 0)];
     for (let a = Math.acos(2.4 / 6.5); a <= Math.PI + 1e-6; a += Math.PI / 16) markerProfile.push(new THREE.Vector2(2.4 * Math.sin(a), 6.5 - 2.4 * Math.cos(a)));
     markerProfile.push(new THREE.Vector2(0, 6.5 + 2.4));
@@ -288,8 +288,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const pennantGeo = new THREE.BufferGeometry();
     pennantGeo.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, -NEEDLE, 0, 0, -NEEDLE + 3.6, 6.5, 0, -NEEDLE + 1.4], 3));
     pennantGeo.computeVertexNormals();
-    // Invisible hit area round every head (about twice the pushpin's), so the small heads and thin needle are easy to click;
-    // it relies on the r128 raycaster hitting invisible meshes, and hitAt counts it as its pin
+    // Invisible click target around every head (about twice the pushpin's size), so small heads and the thin needle are easy to hit.
+    // It relies on the r128 raycaster hitting invisible meshes; hitAt treats it as part of its pin
     const hitGeo = new THREE.SphereGeometry(4.5, 8, 8).translate(0, 0, -NEEDLE - 0.5);
     const hitMat = new THREE.MeshBasicMaterial();
 
@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tooltip = document.getElementById("globe-tooltip");
     const regionButtons = document.querySelectorAll(".region-btn");
     const heroTitle = document.getElementById("hero-title");
-    const homeTitle = [...heroTitle.childNodes]; // put back as-is on close, keeping the two-line span
+    const homeTitle = [...heroTitle.childNodes]; // restored when the card closes
     const globeStatus = document.getElementById("globe-status");
     let keyboardMode = false; // arrow keys are turning the globe; the pin facing the viewer is highlighted
     let facingPin = null;
@@ -496,8 +496,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setReading(false);
         // Opening from home adds one history entry (so Back closes the card); switching festivals replaces it.
-        // From a reading view, first step back off its /about entry (popstate then replaces the card entry underneath),
-        // so closing or Back always returns home rather than to the earlier festival.
+        // From a reading view, first go back off its /about entry (popstate then replaces the card entry beneath it),
+        // so Close and Back always return home, not to the previous festival.
         if (!fromHistory) {
             if (pendingSwitch) pendingSwitch = targetId; // a second pick before the step back lands
             else if (history.state && history.state.about) {
@@ -529,10 +529,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Reading view (#<id>/about): the panel widens to show the open festival's long read
     const closeBtn = document.getElementById("back-home-btn");
-    const BACK_ICON = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>'; // ">" by the owner's choice
+    const BACK_ICON = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>'; // a ">" chevron, on purpose
     function setReading(on) {
         panel.classList.toggle("is-reading", on);
-        // In the reading view the button steps back to the card (it already does via history), so it looks like a back button
+        // In the reading view the button goes back to the card (via history), so it looks like a back button
         closeBtn.innerHTML = on ? BACK_ICON : "&times;";
         closeBtn.setAttribute("aria-label", on ? "Back to festival summary" : "Close festival details");
         if (!on) return;
@@ -556,8 +556,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return { id, about: sub === "about" && !!document.querySelector(`#card-${id} .festival-about`) };
     }
 
-    // A festival opened from the address bar (a shared link or a typed #id) gets a home entry underneath
-    // (and a card entry under an /about page), so Back and the close button always step back to the home view
+    // A festival opened from the address bar (a shared link or a typed #id) gets a home entry beneath it
+    // (and a card entry beneath an /about page), so Back and the close button always lead back to the home view
     function openFromAddress(id, about) {
         if (!(history.state && history.state.festival)) {
             history.replaceState(null, "", location.pathname + location.search);
@@ -673,7 +673,7 @@ document.addEventListener("DOMContentLoaded", () => {
         globeStatus.textContent = selectedRegion ? `${selectedRegion}: ${names.join(", ")}` : "Showing all festivals";
     });
 
-    // Its position is only set on opening, so close it rather than leave it floating
+    // Its position is set only when it opens, so close it on resize instead of leaving it misplaced
     window.addEventListener("resize", () => {
         if (regionFilter.matches(":popover-open")) regionFilter.hidePopover();
     });
@@ -721,11 +721,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // OrbitControls cancels the browser's click-to-focus (and the canvas can't take focus), so focus the globe here
-    // focusVisible: false keeps the ring for Tab focus only
-    // (blur first: re-focusing an already Tab-focused globe would keep its keyboard ring and hold the spin)
-    // Dragging starts only on the globe or a pin: elsewhere the press is kept from OrbitControls (on the canvas inside),
-    // so clicks on the year ring and empty space still work but don't turn the globe
+    // OrbitControls cancels the browser's click-to-focus (and the canvas can't take focus), so focus the globe here.
+    // focusVisible: false shows the focus ring for Tab focus only. Blur first: re-focusing a globe that was
+    // already Tab-focused would keep its keyboard ring and keep the spin paused.
+    // Dragging should start only on the globe or a pin. Elsewhere the press is stopped before it reaches OrbitControls
+    // (on the canvas inside), so clicks on the year ring and empty space still work but don't turn the globe.
     container.addEventListener("pointerdown", (event) => {
         container.blur();
         container.focus({ preventScroll: true, focusVisible: false });
@@ -780,7 +780,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener("keydown", (e) => {
-        if (e.key !== "Escape" || document.querySelector("dialog[open], :popover-open")) return; // Escape closes an open photo, About or the region pills first, not the card
+        if (e.key !== "Escape" || document.querySelector("dialog[open], :popover-open")) return; // Escape closes an open dialog or the region pills first, not the card
         if (selectedPin) closeFestival();
         else {
             setSelectedMonth(null);
