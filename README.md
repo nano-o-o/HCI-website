@@ -43,6 +43,10 @@ and open http://localhost:8765/HCI.html.
 | `images/` | Festival photos |
 | `vendor/` | Bundled libraries, map data and fonts |
 
+## Code explanation
+
+A walkthrough of each part of `HCI.html`, `style.css` and `globe.js`, and how they connect, is in the README on the [`dev` branch](https://github.com/nano-o-o/HCI-website/tree/dev#how-the-code-works).
+
 ## Credits
 
 - **Photos:** from Wikimedia Commons, under Creative Commons licences. Each photo's author and licence are credited on its card, with a link to the original file.
