@@ -20,11 +20,13 @@ const EID_MONTHS = NOW.getFullYear() in EID_MONTH ? [EID_MONTH[NOW.getFullYear()
 const FESTIVALS = [
     { id: "diwali", label: "Diwali", lat: 20.5937, lon: 78.9629, color: "diwali", mood: "night", months: [9, 10], countries: ["India"] },
     { id: "lunar-new-year", label: "Lunar New Year", lat: 35.8617, lon: 104.1954, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
+    { id: "lantern-festival", label: "Lantern Festival", lat: 35.8617, lon: 104.1954, color: "lantern", mood: "night", months: [1, 2], countries: ["China"] },
     { id: "eid", label: "Eid al-Fitr", lat: 23.8859, lon: 45.0792, color: "eid", mood: "day", months: EID_MONTHS, countries: ["Saudi Arabia"], related: MUSLIM_MAJORITY },
     { id: "rio-carnival", label: "Rio Carnival", lat: -14.235, lon: -51.9253, color: "rio", mood: "night", months: [1, 2], countries: ["Brazil"] },
     { id: "oktoberfest", label: "Oktoberfest", lat: 48.1351, lon: 11.5820, color: "oktoberfest", mood: "day", months: [8, 9], countries: ["Germany"] },
     { id: "holi", label: "Holi", lat: 27.4924, lon: 77.6737, color: "holi", mood: "day", months: [2], countries: ["India", "Nepal"] },
     { id: "songkran", label: "Songkran", lat: 15.87, lon: 100.9925, color: "songkran", mood: "day", months: [3], countries: ["Thailand"], related: ["Laos", "Myanmar", "Cambodia"] },
+    { id: "loy-krathong", label: "Loy Krathong", lat: 17.0078, lon: 99.823, color: "loy", mood: "night", months: [10], countries: ["Thailand"] },
     { id: "dia-de-muertos", label: "Día de Muertos", lat: 23.6345, lon: -102.5528, color: "muertos", mood: "night", months: [10], countries: ["Mexico"] },
     // Las Fallas comes before La Tomatina so the Spain pin sits at Valencia (Buñol is 40 km away); Mardi Gras sets the USA pin at the country's centre
     { id: "las-fallas", label: "Las Fallas", lat: 39.4699, lon: -0.3763, color: "fallas", mood: "night", months: [2], countries: ["Spain"] },
@@ -43,7 +45,12 @@ const FESTIVALS = [
     { id: "dubai-shopping-festival", label: "Dubai Shopping Festival", lat: 25.2048, lon: 55.2708, color: "dsf", mood: "night", months: [11, 0], countries: ["United Arab Emirates"] },
     // Nowruz lights the other states on UNESCO's joint inscription
     { id: "nowruz", label: "Nowruz", lat: 32.4279, lon: 53.6880, color: "nowruz", mood: "day", months: [2], countries: ["Iran"],
-        related: ["Afghanistan", "Azerbaijan", "India", "Iraq", "Kazakhstan", "Kyrgyzstan", "Pakistan", "Tajikistan", "Turkey", "Turkmenistan", "Uzbekistan"] }
+        related: ["Afghanistan", "Azerbaijan", "India", "Iraq", "Kazakhstan", "Kyrgyzstan", "Pakistan", "Tajikistan", "Turkey", "Turkmenistan", "Uzbekistan"] },
+    // Sapporo comes before Awa Odori and carries Japan's centre, so the pin sits between Sapporo and Tokushima (about 1,300 km apart)
+    { id: "sapporo-snow-festival", label: "Sapporo Snow Festival", lat: 36.2048, lon: 138.2529, color: "sapporo", mood: "day", months: [1], countries: ["Japan"] },
+    { id: "awa-odori", label: "Awa Odori", lat: 34.0703, lon: 134.5548, color: "awa", mood: "night", months: [7], countries: ["Japan"] },
+    { id: "bon-om-touk", label: "Bon Om Touk", lat: 11.5564, lon: 104.9282, color: "bon", mood: "day", months: [10], countries: ["Cambodia"] },
+    { id: "tet", label: "Tết", lat: 14.0583, lon: 108.2772, color: "tet", mood: "day", months: [0, 1], countries: ["Vietnam"] }
 ];
 const festivalById = Object.fromEntries(FESTIVALS.map((f) => [f.id, f]));
 
