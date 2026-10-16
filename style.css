@@ -79,6 +79,11 @@
     --festival-vina: #1e5a1e;
     --festival-guelaguetza: #960f5a;
     --festival-iemanja: #2d00ff;
+    --festival-gnaoua: #1e4ba5;
+    --festival-fez: #785a0f;
+    --festival-cape: #c34b00;
+    --festival-dsf: #78780f;
+    --festival-nowruz: #5a693c;
     --glow-diwali: #fde047;
     --glow-lunar: #f87171;
     --glow-eid: #2dd4bf;
@@ -96,6 +101,11 @@
     --glow-vina: #00b478;
     --glow-guelaguetza: #ffa5b4;
     --glow-iemanja: #e178ff;
+    --glow-gnaoua: #2da5ff;
+    --glow-fez: #a5b43c;
+    --glow-cape: #ff9600;
+    --glow-dsf: #f0b41e;
+    --glow-nowruz: #e1f096;
 
     --font-display: "Fraunces", Georgia, serif;
     --font-body: "Alegreya Sans", system-ui, sans-serif;
@@ -383,6 +393,11 @@ body,
 .region-btn[data-target="vina-del-mar"] { --c: var(--festival-vina); --g: var(--glow-vina); }
 .region-btn[data-target="guelaguetza"] { --c: var(--festival-guelaguetza); --g: var(--glow-guelaguetza); }
 .region-btn[data-target="iemanja"] { --c: var(--festival-iemanja); --g: var(--glow-iemanja); }
+.region-btn[data-target="gnaoua"] { --c: var(--festival-gnaoua); --g: var(--glow-gnaoua); }
+.region-btn[data-target="fez-sacred-music"] { --c: var(--festival-fez); --g: var(--glow-fez); }
+.region-btn[data-target="cape-town-carnival"] { --c: var(--festival-cape); --g: var(--glow-cape); }
+.region-btn[data-target="dubai-shopping-festival"] { --c: var(--festival-dsf); --g: var(--glow-dsf); }
+.region-btn[data-target="nowruz"] { --c: var(--festival-nowruz); --g: var(--glow-nowruz); }
 
 .region-btn {
     width: 100%;
@@ -779,6 +794,11 @@ body,
 #card-vina-del-mar { --c: var(--festival-vina); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 8.5q3-4.5 6 0q3-4.5 6 0' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'/><path d='M17 5q2.2-3.2 4.4 0q2.2-3.2 4.4 0' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>"); } /* seagulls */
 #card-guelaguetza { --c: var(--festival-guelaguetza); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path fill-rule='evenodd' d='M1 13V10H4V7H7V4H10V1H18V4H21V7H24V10H27V13ZM11 13V7H17V13Z'/></svg>"); } /* stepped greca */
 #card-iemanja { --c: var(--festival-iemanja); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M0 6q3.5-5 7 0t7 0t7 0t7 0' fill='none' stroke='black' stroke-width='1.6'/><path d='M0 12q3.5-3 7 0t7 0t7 0t7 0' fill='none' stroke='black' stroke-width='1'/></svg>"); } /* waves */
+#card-gnaoua { --c: var(--festival-gnaoua); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><circle cx='4.6' cy='7' r='3.4' fill='none' stroke='black' stroke-width='1.5'/><circle cx='11.4' cy='7' r='3.4' fill='none' stroke='black' stroke-width='1.5'/><circle cx='18' cy='7' r='3.4' fill='none' stroke='black' stroke-width='1.5'/><circle cx='24.8' cy='7' r='3.4' fill='none' stroke='black' stroke-width='1.5'/></svg>"); } /* qraqeb */
+#card-fez-sacred-music { --c: var(--festival-fez); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M2.5 14V8.6A4.6 4.6 0 1 1 11.5 8.6V14' fill='none' stroke='black' stroke-width='1.5'/><path d='M16.5 14V8.6A4.6 4.6 0 1 1 25.5 8.6V14' fill='none' stroke='black' stroke-width='1.5'/></svg>"); } /* horseshoe arches */
+#card-cape-town-carnival { --c: var(--festival-cape); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 8C1.5 4 5 1.5 8.5 1.5S15.5 4 15.5 8Q13.2 6.3 11.8 8Q10.2 6.3 8.5 8Q6.8 6.3 5.2 8Q3.8 6.3 1.5 8Z'/><path d='M8.5 8V12.5a1.4 1.4 0 0 1-2.8 0' fill='none' stroke='black' stroke-width='1.1'/><path d='M17 9C17 6.3 19.2 4.5 21.5 4.5S26 6.3 26 9Q24.5 8 23.5 9Q22.5 8 21.5 9Q20.5 8 19.5 9Q18.5 8 17 9Z'/><path d='M21.5 9V12.5a1.2 1.2 0 0 1-2.4 0' fill='none' stroke='black' stroke-width='1'/></svg>"); } /* umbrellas */
+#card-dubai-shopping-festival { --c: var(--festival-dsf); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M3 5h9l.9 8.5H2.1z'/><path d='M5 5V3.6a2.5 2.5 0 0 1 5 0V5' fill='none' stroke='black' stroke-width='1.1'/><path d='M16.5 6.5h8l.8 7h-9.6z'/><path d='M18.4 6.5V5.3a2.2 2.2 0 0 1 4.4 0v1.2' fill='none' stroke='black' stroke-width='1'/></svg>"); } /* shopping bags */
+#card-nowruz { --c: var(--festival-nowruz); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M5 14C4.6 9.5 3.4 6 1 3.5C5 4 7 7.5 7 14zM8.5 14C8.5 8.5 8.8 4.5 10.6 .8C12.4 4.5 12.2 9 11.5 14zM13 14C13 10 14.5 6.5 17.5 4.5C17.2 8 16 11 15.5 14z'/><path d='M19 14c.3-3.4 1.6-5.8 3.6-7.3c0 2.6-.6 5-1.3 7.3zM23 14c0-3 .8-5 2.6-6.4c.2 2.2-.2 4.4-.8 6.4z'/></svg>"); } /* sabzeh sprouts */
 
 .festival-card::before {
     content: "";

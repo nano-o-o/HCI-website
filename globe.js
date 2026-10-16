@@ -35,7 +35,15 @@ const FESTIVALS = [
     { id: "coachella", label: "Coachella", lat: 33.6803, lon: -116.2379, color: "coachella", mood: "night", months: [3], countries: ["United States of America"] },
     { id: "vina-del-mar", label: "Viña del Mar Festival", lat: -33.0245, lon: -71.5518, color: "vina", mood: "night", months: [1], countries: ["Chile"] },
     { id: "guelaguetza", label: "Guelaguetza", lat: 17.0732, lon: -96.7266, color: "guelaguetza", mood: "day", months: [6], countries: ["Mexico"] },
-    { id: "iemanja", label: "Festa de Iemanjá", lat: -13.0108, lon: -38.4917, color: "iemanja", mood: "day", months: [1], countries: ["Brazil"], related: ["Uruguay"] }
+    { id: "iemanja", label: "Festa de Iemanjá", lat: -13.0108, lon: -38.4917, color: "iemanja", mood: "day", months: [1], countries: ["Brazil"], related: ["Uruguay"] },
+    // Gnaoua comes before Fez and carries Morocco's centre, so the pin sits between Essaouira and Fez (about 500 km apart)
+    { id: "gnaoua", label: "Gnaoua World Music Festival", lat: 31.7917, lon: -7.0926, color: "gnaoua", mood: "night", months: [5], countries: ["Morocco"] },
+    { id: "fez-sacred-music", label: "Fez Festival of World Sacred Music", lat: 34.0331, lon: -5.0003, color: "fez", mood: "night", months: [4, 5], countries: ["Morocco"] },
+    { id: "cape-town-carnival", label: "Cape Town Minstrel Carnival", lat: -33.9249, lon: 18.4241, color: "cape", mood: "day", months: [0], countries: ["South Africa"] },
+    { id: "dubai-shopping-festival", label: "Dubai Shopping Festival", lat: 25.2048, lon: 55.2708, color: "dsf", mood: "night", months: [11, 0], countries: ["United Arab Emirates"] },
+    // Nowruz lights the other states on UNESCO's joint inscription
+    { id: "nowruz", label: "Nowruz", lat: 32.4279, lon: 53.6880, color: "nowruz", mood: "day", months: [2], countries: ["Iran"],
+        related: ["Afghanistan", "Azerbaijan", "India", "Iraq", "Kazakhstan", "Kyrgyzstan", "Pakistan", "Tajikistan", "Turkey", "Turkmenistan", "Uzbekistan"] }
 ];
 const festivalById = Object.fromEntries(FESTIVALS.map((f) => [f.id, f]));
 
