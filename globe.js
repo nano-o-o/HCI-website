@@ -25,7 +25,17 @@ const FESTIVALS = [
     { id: "oktoberfest", label: "Oktoberfest", lat: 48.1351, lon: 11.5820, color: "oktoberfest", mood: "day", months: [8, 9], countries: ["Germany"] },
     { id: "holi", label: "Holi", lat: 27.4924, lon: 77.6737, color: "holi", mood: "day", months: [2], countries: ["India", "Nepal"] },
     { id: "songkran", label: "Songkran", lat: 15.87, lon: 100.9925, color: "songkran", mood: "day", months: [3], countries: ["Thailand"], related: ["Laos", "Myanmar", "Cambodia"] },
-    { id: "dia-de-muertos", label: "Día de Muertos", lat: 23.6345, lon: -102.5528, color: "muertos", mood: "night", months: [10], countries: ["Mexico"] }
+    { id: "dia-de-muertos", label: "Día de Muertos", lat: 23.6345, lon: -102.5528, color: "muertos", mood: "night", months: [10], countries: ["Mexico"] },
+    // Las Fallas comes before La Tomatina so the Spain pin sits at Valencia (Buñol is 40 km away); Mardi Gras sets the USA pin at the country's centre
+    { id: "las-fallas", label: "Las Fallas", lat: 39.4699, lon: -0.3763, color: "fallas", mood: "night", months: [2], countries: ["Spain"] },
+    { id: "la-tomatina", label: "La Tomatina", lat: 39.4189, lon: -0.7906, color: "tomatina", mood: "day", months: [7], countries: ["Spain"] },
+    { id: "venice-carnival", label: "Venice Carnival", lat: 45.4408, lon: 12.3155, color: "venice", mood: "day", months: [1, 2], countries: ["Italy"] },
+    { id: "bastille-day", label: "Bastille Day", lat: 48.8566, lon: 2.3522, color: "bastille", mood: "day", months: [6], countries: ["France"] },
+    { id: "mardi-gras", label: "Mardi Gras", lat: 39.8283, lon: -98.5795, color: "mardigras", mood: "day", months: [1, 2], countries: ["United States of America"] },
+    { id: "coachella", label: "Coachella", lat: 33.6803, lon: -116.2379, color: "coachella", mood: "night", months: [3], countries: ["United States of America"] },
+    { id: "vina-del-mar", label: "Viña del Mar Festival", lat: -33.0245, lon: -71.5518, color: "vina", mood: "night", months: [1], countries: ["Chile"] },
+    { id: "guelaguetza", label: "Guelaguetza", lat: 17.0732, lon: -96.7266, color: "guelaguetza", mood: "day", months: [6], countries: ["Mexico"] },
+    { id: "iemanja", label: "Festa de Iemanjá", lat: -13.0108, lon: -38.4917, color: "iemanja", mood: "day", months: [1], countries: ["Brazil"], related: ["Uruguay"] }
 ];
 const festivalById = Object.fromEntries(FESTIVALS.map((f) => [f.id, f]));
 

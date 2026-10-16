@@ -46,6 +46,15 @@ colors:
   festival-holi: "#db2777"
   festival-songkran: "#0e7490"
   festival-muertos: "#9a3412"
+  festival-tomatina: "#a5002d"
+  festival-fallas: "#5a5a00"
+  festival-venice: "#8700a5"
+  festival-bastille: "#00875a"
+  festival-mardigras: "#b400ff"
+  festival-coachella: "#694b2d"
+  festival-vina: "#1e5a1e"
+  festival-guelaguetza: "#960f5a"
+  festival-iemanja: "#2d00ff"
   glow-diwali: "#fde047"
   glow-lunar: "#f87171"
   glow-eid: "#2dd4bf"
@@ -54,6 +63,15 @@ colors:
   glow-holi: "#f472b6"
   glow-songkran: "#67e8f9"
   glow-muertos: "#fdba74"
+  glow-tomatina: "#ffa587"
+  glow-fallas: "#3cb400"
+  glow-venice: "#ffb4ff"
+  glow-bastille: "#00ff78"
+  glow-mardigras: "#b4a5ff"
+  glow-coachella: "#d2c387"
+  glow-vina: "#00b478"
+  glow-guelaguetza: "#ffa5b4"
+  glow-iemanja: "#e178ff"
 typography:
   display:
     fontFamily: Fraunces
@@ -80,7 +98,7 @@ The site is a festival atlas with a 3D globe as the hero. It opens in a warm mor
 - **Accent:** `amber-text` by day and `gold` at night, for hovers. On light surfaces `gold` is decoration only, never text.
 - **Cards (`cream`, `ink*`):** the same paper card in both themes. Inside a card the focus ring is always `ink`.
 - **Globe (`globe-day-*`, `globe-night-*`):** both sets are always defined. The globe draws a day map and a night map and crossfades between them. The map has a faint 30° graticule and thin country borders in the coast colour; at night, stars (`on-night`) fade in behind it.
-- **Festival colours:** every festival owns one pair. `festival-*` is the only one allowed behind text (badges, the pressed list item) and is also the day pin and day country highlight. `glow-*` is the night pin and night country highlight. The eight pairs were chosen to stay as far apart as possible (smallest CIEDE2000 difference 13.7 by day and 14.8 at night), because the list is the pins' colour key; check a new festival's pair against the others before adding it. The selected pin's ring uses `ink` by day and white at night so it stands out against its own highlighted country.
+- **Festival colours:** every festival owns one pair. `festival-*` is the only one allowed behind text (badges, the pressed list item) and is also the day pin and day country highlight. `glow-*` is the night pin and night country highlight. The seventeen pairs were chosen to stay as far apart as possible (smallest CIEDE2000 difference 13.7 by day and 14.3 at night; the nine added with the Europe and Americas batch were searched with the first eight fixed), because the list is the pins' colour key; check a new festival's pair against the others before adding it. The selected pin's ring uses `ink` by day and white at night so it stands out against its own highlighted country.
 - **Code ownership:** `style.css` `:root` is the only place these values live, and `globe.js` reads them from there.
 
 ## Themes
@@ -123,9 +141,9 @@ Cards and the details panel use `rounded.base`. Festival list items use a smalle
 - **Festival list:** headed "All festivals" in the same style as the right column's headings (hidden on phones, where the list is a row). In calendar order (Eid last, as its date varies). Each item shows a colour dot (the pin's colour), the festival name and region, and the month in its own right-hand column. When pressed it fills with the festival's `festival-*` colour. The list doubles as the colour key for the pins. It scrolls with a thin scrollbar that turns `accent-text` on hover, and soft fades at both ends.
 - **Pins:** one pin per country (festivals group by their first country, at the first festival's spot there). A country with several festivals has a small count badge and slowly cycles its pin through their colours (2.5 s hold, 1.5 s fade; paused while hovered, held on the open festival's colour). Clicking it spins and zooms to the country like a festival does, but the details panel shows the country's festival list (photo, name, month, one line) instead of a card, with the country lit in `accent-text` (`gold` at night) and the theme unchanged (the count badge hides while the list or one of its cards is open, so the pin shows); choosing one opens its card, whose back chevron returns to the list. The list has no address of its own. The list, "Coming up" and links still open a festival directly. Each design has a small idle motion: the pushpin wobbles, the lantern sways and its glow pulses, the flag's pennant waves (pole fixed), the candle flame flickers, the marker bobs, and the firework's rays burst outward and fade in a slow 3 s loop. Every pin has its own phase. The motion is doubled for a hovered or selected pin and for festivals on now; dimmed pins and pins on the far side of the globe hold still. When the globe is zoomed in, pins grow on screen only gently (their size in the world shrinks as zoom^-0.6, the click area with it) so they neither balloon nor shrink. Zoomed in past about 1.8x (it collapses again below about 1.6x), a country pin with several festivals splits into one smaller pin per festival, in a tight ring around the country's spot (no real coordinates: Diwali has no single place). Each fanned pin keeps the chosen design in its own festival colour, opens its festival's card directly, and dims, brightens, pulses and moves like any pin. The ring radius follows the pins' size, so neighbours stay about three pin widths apart at every zoom. Colour cycling pauses while fanned. While a festival or country list is open, only that country fans. Phones and windows up to 720px wide stop at 1.3x and never fan.
 - **Selecting a festival:** the globe spins, tilts and zooms to centre its country, lights up the country (Eid also faintly lights the other Muslim-majority countries), keeps the selected pin pulsing and dims the other pins to 30%. It then applies the festival's theme. A country's festival list does the same, except that it lights the country in the accent colour and leaves the theme as it was until a festival is chosen.
-- **Festival pattern strip:** under each card's photo, a row of that festival's motif in its `festival-*` colour (diya flames, a fret, eight-point stars, sequin scallops, Bavarian lozenges, colour-powder splashes, water drops, papel picado). The region and country pills on the photo take the festival colour (Eid says "Worldwide"). It replaces the gold top edge, and is the one decorative flourish on the page.
+- **Festival pattern strip:** under each card's photo, a row of that festival's motif in its `festival-*` colour (diya flames, a fret, eight-point stars, sequin scallops, Bavarian lozenges, colour-powder splashes, water drops, papel picado, tomatoes, bonfire flames, carnival masks, cockades, bead strands, palm trees, seagulls, a stepped greca, waves). The region and country pills on the photo take the festival colour (Eid says "Worldwide"). It replaces the gold top edge, and is the one decorative flourish on the page.
 - **Copy:** no middle-dot meta strings and no arrows on links; the card link reads "Read more about <festival>" and opens the festival's reading view, which ends with its sources.
-- **Greeting:** under the mood tag, the festival's greeting in its own script and language (marked with `lang`), in its `festival-*` colour, with a transliteration and meaning beneath.
+- **Greeting:** under the mood tag, the festival's greeting, or its best-known phrase where it has no greeting (Viña del Mar: "¡El Monstruo!"), in its own script and language (marked with `lang`), in its `festival-*` colour, with a transliteration and meaning beneath. A festival with neither (Coachella) has no greeting line.
 - **Pins switch:** under the festival list, a "Pins" group of six pill radio buttons in two rows of three (Pushpin, Lantern, Flag; Marker, Candle, Firework) that changes the pin design. Pushpin is the default; the choice is remembered per visitor. Hidden on phones. The chosen pill fills with `text`. Flag pins carry a 3D pennant fixed to the pole, so it turns with the globe. Marker (a map-style teardrop) and Candle (a candle in the festival colour with a gold flame) stand on the surface without a needle; Firework is a small ball bursting into rays of the festival colour.
 - **Coming up:** on the home view, when the page is at least 1240px wide, the right column mirrors the festival list: "Happening now" (festivals in the current month) and "Coming up" (the next three by month), as copies of the list's buttons. Its first heading lines up with "All festivals", and it scrolls on short screens. It fades out while a festival is open, as the details panel takes its place.
 - **On now:** list items for festivals in the current month carry an "On now" pill in their colour, and a pin pulses twice as wide if any of its festivals is on now.

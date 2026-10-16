@@ -8,7 +8,7 @@ Pick a festival from the list, or spin the globe and click a pin. The globe turn
 
 ## Festivals
 
-Lunar New Year · Rio Carnival · Holi · Songkran · Oktoberfest · Diwali · Día de Muertos · Eid al-Fitr
+Lunar New Year · Festa de Iemanjá · Venice Carnival · Mardi Gras · Rio Carnival · Viña del Mar Festival · Las Fallas · Holi · Coachella · Songkran · Bastille Day · Guelaguetza · La Tomatina · Oktoberfest · Diwali · Día de Muertos · Eid al-Fitr
 
 ## Features
 
