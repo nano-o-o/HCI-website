@@ -13,6 +13,8 @@ const THIS_MONTH = NOW.getMonth();
 const EID_MONTHS = NOW.getFullYear() in EID_MONTH ? [EID_MONTH[NOW.getFullYear()]] : [];
 
 // To add a festival: add an entry here, a card and list item in HCI.html, and colour tokens and a motif in style.css.
+// Pins are one per country: a festival joins the pin of its first `countries` entry (a second festival there adds a count badge,
+// a colour cycle and a festival list in the panel), and a new country's pin sits at the first festival's lat/lon.
 // `color` names the token pair (--festival-<color> by day, --glow-<color> at night); `mood` is the theme the festival opens in;
 // `months` (0 = January) drive the "On now" label and the year ring.
 const FESTIVALS = [
@@ -21,14 +23,9 @@ const FESTIVALS = [
     { id: "eid", label: "Eid al-Fitr", lat: 23.8859, lon: 45.0792, color: "eid", mood: "day", months: EID_MONTHS, countries: ["Saudi Arabia"], related: MUSLIM_MAJORITY },
     { id: "rio-carnival", label: "Rio Carnival", lat: -14.235, lon: -51.9253, color: "rio", mood: "night", months: [1, 2], countries: ["Brazil"] },
     { id: "oktoberfest", label: "Oktoberfest", lat: 48.1351, lon: 11.5820, color: "oktoberfest", mood: "day", months: [8, 9], countries: ["Germany"] },
-    { id: "timkat", label: "Timkat", lat: 9.145, lon: 40.4897, color: "timkat", mood: "day", months: [0], countries: ["Ethiopia"] },
     { id: "holi", label: "Holi", lat: 27.4924, lon: 77.6737, color: "holi", mood: "day", months: [2], countries: ["India", "Nepal"] },
     { id: "songkran", label: "Songkran", lat: 15.87, lon: 100.9925, color: "songkran", mood: "day", months: [3], countries: ["Thailand"], related: ["Laos", "Myanmar", "Cambodia"] },
-    { id: "dia-de-muertos", label: "Día de Muertos", lat: 23.6345, lon: -102.5528, color: "muertos", mood: "night", months: [10], countries: ["Mexico"] },
-    { id: "hanukkah", label: "Hanukkah", lat: 31.0461, lon: 34.8516, color: "hanukkah", mood: "night", months: [11], countries: ["Israel"] },
-    { id: "vesak", label: "Vesak", lat: 7.8731, lon: 80.7718, color: "vesak", mood: "night", months: [4], countries: ["Sri Lanka"], related: ["Nepal", "Thailand", "Myanmar", "Laos", "Cambodia"] },
-    { id: "matariki", label: "Matariki", lat: -40.9006, lon: 174.886, color: "matariki", mood: "night", months: [5, 6], countries: ["New Zealand"] },
-    { id: "osun-osogbo", label: "Osun-Osogbo", lat: 7.7827, lon: 4.5418, color: "osun", mood: "day", months: [7], countries: ["Nigeria"] }
+    { id: "dia-de-muertos", label: "Día de Muertos", lat: 23.6345, lon: -102.5528, color: "muertos", mood: "night", months: [10], countries: ["Mexico"] }
 ];
 const festivalById = Object.fromEntries(FESTIVALS.map((f) => [f.id, f]));
 
@@ -47,6 +44,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const EASE = reduceMotion ? 1 : 0.07; // fraction of the remaining distance covered per frame
     const ZOOM = 0.8;                      // zoomed camera distance as a fraction of the home distance
     const DEG = Math.PI / 180;
+    // User zoom is a factor z: the camera sits at homeDist / z. Phones and narrow windows stay at 1.3x, where the 2048 map is still sharp;
+    // elsewhere the maps are rebuilt at 4096 the first time the visitor zooms past that.
+    const SMALL = window.matchMedia("(pointer: coarse), (max-width: 720px)").matches;
+    const MAX_ZOOM = SMALL ? 1.3 : 2.5;
+    const SHARP_ZOOM = 1.28;
+    const LABEL_ZOOM = SMALL ? 1.2 : 1.4; // country labels fade in above this
 
     // 1. Scene setup
     const scene = new THREE.Scene();
@@ -62,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.enableZoom = false;
+    controls.zoomSpeed = 0.6; // two-finger pinch only: the wheel is handled in section 6
     controls.enablePan = false;
 
     // 2. Lighting
@@ -157,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function drawMap(map, festival) {
         const { ctx, canvas } = map;
         const pal = palettes[map.mood];
+        const px = canvas.width / 2048; // line widths below are for the 2048 map
         ctx.globalAlpha = 1;
         ctx.fillStyle = pal.ocean;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -167,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let lat = -60; lat <= 60; lat += 30) { const y = ((90 - lat) / 180) * canvas.height; ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
         ctx.globalAlpha = 0.25;
         ctx.strokeStyle = pal.coast;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.5 * px;
         ctx.stroke();
         ctx.globalAlpha = 1;
 
@@ -178,15 +182,17 @@ document.addEventListener("DOMContentLoaded", () => {
         // Thin country borders, then the coastline on top
         tracePath(map, allCountries);
         ctx.globalAlpha = 0.45;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = px;
         ctx.stroke();
         ctx.globalAlpha = 1;
         tracePath(map, land);
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 * px;
         ctx.stroke();
 
         if (festival) {
-            const colour = token(map.mood === "night" ? `--glow-${festival.color}` : `--festival-${festival.color}`);
+            const night = map.mood === "night";
+            // `neutral` is a country's festival list: lit in the accent, not a festival's colour
+            const colour = token(festival.neutral ? (night ? "--gold" : "--accent-text") : night ? `--glow-${festival.color}` : `--festival-${festival.color}`);
             if (festival.related) {
                 tracePath(map, festival.related.map((n) => countryByName[n]));
                 ctx.globalAlpha = 0.35;
@@ -199,17 +205,31 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fill("evenodd");
             ctx.globalAlpha = 1;
             ctx.strokeStyle = map.mood === "night" ? "#ffffff" : token("--ink");
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 3 * px;
             ctx.stroke();
         }
         map.texture.needsUpdate = true;
     }
 
+    let drawn = null;
     function drawMaps(festival) {
+        drawn = festival;
         drawMap(dayMap, festival);
         drawMap(nightMap, festival);
     }
     drawMaps(null);
+
+    // Zooming in on a desktop: double the map's resolution (about 78 MB more of canvas and texture memory), once
+    let sharp = false;
+    function upgradeMaps() {
+        sharp = true;
+        [dayMap, nightMap].forEach((m) => {
+            m.canvas.width = 4096;
+            m.canvas.height = 2048;
+            m.texture.dispose();
+        });
+        drawMaps(drawn);
+    }
 
     // Halo: a rim glow brightest at the globe's edge, fading outward (white by day, lantern gold at night)
     const halo = new THREE.Mesh(
@@ -293,10 +313,43 @@ document.addEventListener("DOMContentLoaded", () => {
     const hitGeo = new THREE.SphereGeometry(4.5, 8, 8).translate(0, 0, -NEEDLE - 0.5);
     const hitMat = new THREE.MeshBasicMaterial();
 
-    FESTIVALS.forEach((festival) => {
-        const pos = latLongToVector3(festival.lat, festival.lon, globeRadius + 0.3);
-        const dayColor = new THREE.Color(token(`--festival-${festival.color}`));
-        const nightColor = new THREE.Color(token(`--glow-${festival.color}`));
+    // One pin per country: festivals group by their first country, and the pin sits at the first festival's spot there
+    const festivalsByCountry = new Map();
+    FESTIVALS.forEach((f) => festivalsByCountry.set(f.countries[0], [...(festivalsByCountry.get(f.countries[0]) || []), f]));
+
+    // Count badge for a multi-festival pin: a number on a dark disc, drawn once per count; a sprite, so it faces the viewer in every pin style
+    const badgeTextures = {};
+    function badgeSprite(count) {
+        if (!badgeTextures[count]) {
+            const c = document.createElement("canvas");
+            c.width = c.height = 64;
+            const g = c.getContext("2d");
+            g.fillStyle = token("--ink");
+            g.beginPath();
+            g.arc(32, 32, 29, 0, Math.PI * 2);
+            g.fill();
+            g.lineWidth = 4;
+            g.strokeStyle = "#fff";
+            g.stroke();
+            g.fillStyle = "#fff";
+            g.font = "bold 36px sans-serif";
+            g.textAlign = "center";
+            g.textBaseline = "middle";
+            g.fillText(count, 32, 34);
+            badgeTextures[count] = new THREE.CanvasTexture(c);
+        }
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: badgeTextures[count], transparent: true }));
+        sprite.scale.set(6, 6, 1);
+        sprite.position.z = -15; // beyond the tallest head, outward from the surface
+        sprite.raycast = () => {}; // not a click target; the pin's hit sphere covers it
+        return sprite;
+    }
+
+    // Builds one pin at `pos` (a world-space point on the surface): a country's pin, or one festival's fanned pin
+    function buildPin(festivals, country, festival, pos) {
+        const palette = festivals.map((f) => ({ day: new THREE.Color(token(`--festival-${f.color}`)), night: new THREE.Color(token(`--glow-${f.color}`)) }));
+        const dayColor = palette[0].day.clone(); // the colours shown right now, set each frame
+        const nightColor = palette[0].night.clone();
 
         const glossy = new THREE.MeshPhongMaterial({ color: dayColor.clone(), shininess: 60, transparent: true });
         const mats = {
@@ -322,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const hitArea = new THREE.Mesh(hitGeo, hitMat);
         hitArea.visible = false;
         pinMesh.add(hitArea);
-        const pennant = new THREE.Mesh(pennantGeo, new THREE.MeshBasicMaterial({ color: dayColor.clone(), side: THREE.DoubleSide, transparent: true }));
+        const pennant = new THREE.Mesh(pennantGeo.clone(), new THREE.MeshBasicMaterial({ color: dayColor.clone(), side: THREE.DoubleSide, transparent: true }));
         pennant.userData.tint = true;
         const caps = [-NEEDLE - 1 - 2.9, -NEEDLE - 1 + 2.9].map((z, i) => {
             const cap = new THREE.Mesh(capGeos[i], needleMat.clone());
@@ -339,16 +392,126 @@ document.addEventListener("DOMContentLoaded", () => {
         ringMesh.position.copy(pos);
         ringMesh.lookAt(new THREE.Vector3(0, 0, 0));
 
-        pinMesh.userData = { festival, ring: ringMesh, dayColor, nightColor, mats, extras };
+        pinMesh.userData = { festival, festivals, country, lat: festival.lat, palette, cycle: 0, ring: ringMesh, dayColor, nightColor, mats, extras,
+            flame, rays, pennant, basePos: pos.clone(), baseQuat: pinMesh.quaternion.clone(), out: pos.clone().normalize(), rest: true };
+        if (festivals.length > 1) pinMesh.add(badgeSprite(festivals.length));
         globeGroup.add(pinMesh);
         globeGroup.add(ringMesh);
-        pinObjects.push(pinMesh);
-        pinById[festival.id] = pinMesh;
+        return pinMesh;
+    }
+
+    // Fan-out: zoomed past FAN_ON, a multi-festival pin splits into one smaller pin per festival, in a ring around the country's spot
+    // (no real coordinates: Diwali has no single place). It collapses again below FAN_OFF. The ring radius follows the pins' world size,
+    // so neighbours stay about FAN_GAP apart (3 pin widths at scale 1) at every zoom. Phones stop at 1.3x, so they never fan.
+    const FAN_ON = 1.8;
+    const FAN_OFF = 1.6;
+    const FAN_SCALE = 0.7;
+    const FAN_GAP = 15;
+    const FAN_TIME = 0.3; // seconds to ease apart
+    const fanPins = [];
+    festivalsByCountry.forEach((festivals, country) => {
+        const festival = festivals[0]; // `userData.festival` becomes the open festival while a card is open
+        const pin = buildPin(festivals, country, festival, latLongToVector3(festival.lat, festival.lon, globeRadius + 0.3));
+        pinObjects.push(pin);
+        festivals.forEach((f) => { pinById[f.id] = pin; });
+        if (festivals.length < 2) return;
+        const ud = pin.userData;
+        ud.east = new THREE.Vector3(0, 1, 0).cross(ud.out).normalize(); // screen-right when the pin faces the viewer
+        ud.north = ud.out.clone().cross(ud.east);
+        ud.fan = 0;  // 0 collapsed to 1 fanned, moves linearly over FAN_TIME
+        ud.fanE = 0; // the same, eased
+        const n = festivals.length;
+        const start = n === 2 ? 0 : n === 4 ? Math.PI / 4 : Math.PI / 2; // side by side, a square, or a triangle pointing up
+        ud.fanPins = festivals.map((f, k) => {
+            const p = buildPin([f], country, f, ud.basePos);
+            p.userData.fanOf = pin;
+            p.userData.angle = start + (Math.PI * 2 * k) / n;
+            p.visible = p.userData.ring.visible = false;
+            fanPins.push(p);
+            return p;
+        });
     });
+    const allPins = [...pinObjects, ...fanPins]; // parents first: a parent's fan value is settled before its fanned pins read it
+    const isPin = (obj) => !!(obj && obj.userData.festivals);
+
+    // Sets a fanned pin's place on the ring for eased fan value `e` and the current pin world scale
+    const fanP = new THREE.Vector3();
+    const fanM = new THREE.Matrix4();
+    const fanZero = new THREE.Vector3();
+    const fanUp = new THREE.Vector3(0, 1, 0);
+    function placeFan(pin, e, pinZoom) {
+        const ud = pin.userData;
+        const par = ud.fanOf.userData;
+        const r = (e * FAN_GAP * FAN_SCALE * pinZoom) / (2 * Math.sin(Math.PI / par.fanPins.length));
+        if (r === ud.fanR) return;
+        ud.fanR = r;
+        fanP.copy(par.out).multiplyScalar(globeRadius + 0.3).addScaledVector(par.east, Math.cos(ud.angle) * r).addScaledVector(par.north, Math.sin(ud.angle) * r)
+            .setLength(globeRadius + 0.3);
+        ud.basePos.copy(fanP);
+        ud.baseQuat.setFromRotationMatrix(fanM.lookAt(fanZero, fanP, fanUp)); // +z toward the globe's centre, like every pin
+        ud.ring.position.copy(fanP);
+        ud.ring.quaternion.copy(ud.baseQuat);
+        ud.rest = false; // so animatePin re-poses it from the new base
+    }
+
+    const pinLabel = (pin) => pin.userData.festivals.length > 1 ? `${pin.userData.country}: ${pin.userData.festivals.map((f) => f.label).join(", ")}` : pin.userData.festival.label;
+
+    // Idle pin motion. Each function poses its style's parts for strength `a` (0 = rest pose, 1 = idle, 2 = hovered, selected or on now)
+    // and phase `ph`; the click target moves less than 1 unit. The pin's own rotation and position are offsets from their stored rest values.
+    const tiltE = new THREE.Euler();
+    const tiltQ = new THREE.Quaternion();
+    const tilt = (pin, x, y) => pin.quaternion.copy(pin.userData.baseQuat).multiply(tiltQ.setFromEuler(tiltE.set(x, y, 0)));
+    const PIN_MOTION = {
+        push: (pin, t, a, ph) => tilt(pin, 0.05 * a * Math.sin(t * 1.7 + ph), 0.05 * a * Math.sin(t * 1.3 + ph * 1.3)),
+        lantern: (pin, t, a, ph) => {
+            tilt(pin, 0.08 * a * Math.sin(t * 1.2 + ph), 0.05 * a * Math.sin(t * 0.9 + ph * 1.3));
+            if (pin.material.emissive) pin.material.emissive.multiplyScalar(1 + 0.2 * a * Math.sin(t * 2.1 + ph)); // after the loop sets the base glow
+        },
+        flag: (pin, t, a, ph) => {
+            const p = pin.userData.pennant.geometry.attributes.position;
+            p.setY(1, 0.4 * a * Math.sin(t * 3 + ph - 0.8)); // the pole's own vertex (0) stays put
+            p.setY(2, 1.0 * a * Math.sin(t * 3 + ph));
+            p.setZ(2, -NEEDLE + 1.4 + 0.4 * a * Math.sin(t * 4 + ph + 1));
+            p.needsUpdate = true;
+        },
+        candle: (pin, t, a, ph) => {
+            const { flame } = pin.userData;
+            const n = 0.5 * Math.sin(t * 7 + ph) + 0.3 * Math.sin(t * 11.3 + ph * 1.7) + 0.2 * Math.sin(t * 17.9 + ph * 2.3); // three unrelated frequencies: irregular
+            const s = 1 + 0.15 * a * n;
+            flame.scale.set(1 - 0.08 * a * n, 1 - 0.08 * a * n, s);
+            flame.position.z = 6 * (s - 1); // grows from its base on the wick
+            flame.material.opacity *= 1 - 0.1 * a * (0.5 - 0.5 * n);
+        },
+        marker: (pin, t, a, ph) => pin.position.copy(pin.userData.basePos).addScaledVector(pin.userData.out, 0.8 * a * (0.5 + 0.5 * Math.sin(t * 2.4 + ph))),
+        firework: (pin, t, a, ph) => {
+            // Slow loop: the rays fly outwards while fading, then return
+            const p = (t / 3 + ph) % 1;
+            const d = a ? 3 * p : 0;
+            const fade = a ? (p < 0.15 ? p / 0.15 : 1 - (p - 0.15) / 0.85) : 1;
+            pin.userData.rays.forEach((ray, k) => {
+                const dir = rayDirs[k];
+                ray.position.set(dir.x * d, dir.y * d, -NEEDLE - 1 + dir.z * d);
+                ray.material.opacity *= fade;
+            });
+        }
+    };
+    function animatePin(pin, style, t, a, ph) {
+        const ud = pin.userData;
+        if (a === 0 && ud.rest) return;
+        ud.rest = a === 0;
+        pin.quaternion.copy(ud.baseQuat);
+        pin.position.copy(ud.basePos);
+        PIN_MOTION[style](pin, t, a, ph);
+    }
 
     function setPinStyle(style) {
-        pinObjects.forEach((pin) => {
+        allPins.forEach((pin) => {
             const { mats, extras } = pin.userData;
+            pin.userData.rest = true; // so a dimmed pin gets its rest pose
+            PIN_STYLES.forEach((s) => PIN_MOTION[s](pin, 0, 0, 0)); // no stale pose from the previous style
+            pin.quaternion.copy(pin.userData.baseQuat);
+            pin.position.copy(pin.userData.basePos);
+            pin.userData.style = style;
             pin.geometry = headGeo[style];
             pin.material = mats[style];
             PIN_STYLES.forEach((s) => extras[s].forEach((part) => pin.remove(part)));
@@ -435,6 +598,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 6. Interaction state
     const hero = document.getElementById("globe-section");
     const panel = document.getElementById("info-panel");
+    const countryList = document.getElementById("country-list");
     const tooltip = document.getElementById("globe-tooltip");
     const regionButtons = document.querySelectorAll(".region-btn");
     const heroTitle = document.getElementById("hero-title");
@@ -442,16 +606,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const globeStatus = document.getElementById("globe-status");
     let keyboardMode = false; // arrow keys are turning the globe; the pin facing the viewer is highlighted
     let facingPin = null;
+    let listMode = false;    // the panel shows a country's festival list, not a card
+    let navFrom = null;      // country whose list the open card was chosen from (its back chevron returns there)
     let isHovering = false;
     let selectedPin = null;
     let hoveredPin = null;
     let lastTrigger = null;  // control that opened the panel, refocused on close
-    let pendingSwitch = null; // festival picked from a reading view, waiting for history.back() to land
+    let pendingSwitch = null; // { entry, url } picked from a reading view, waiting for history.back() to land
     let nightMix = 0;        // 0 = day, 1 = night (eased toward targetMix)
     let targetMix = 0;
     let targetRot = null;    // { x, y } globe rotation we are easing toward
     let targetCamDist = null;
+    let camFront = true;     // the easing also swings the camera back to the front (selecting, going home); user zoom keeps the view
     let homeDist = 220;
+    const zoomNow = () => homeDist / camera.position.length();
+    const zoomGoal = () => homeDist / (targetCamDist ?? camera.position.length());
+    const defaultZoom = () => (selectedPin ? 1 / ZOOM : 1);
+    function setZoom(z) {
+        z = Math.min(MAX_ZOOM, Math.max(1, z));
+        if (targetCamDist === null) camFront = false;
+        targetCamDist = homeDist / z;
+    }
 
     function setMood(mood) {
         document.documentElement.dataset.theme = mood;
@@ -460,20 +635,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Spin and tilt the globe so the pin sits in the centre, facing the camera
     function focusPin(pin) {
-        const { lat } = pin.userData.festival;
+        const { lat } = pin.userData;
         const current = globeGroup.rotation.y;
         let delta = (-Math.atan2(pin.position.x, pin.position.z) - current) % (Math.PI * 2);
         if (delta > Math.PI) delta -= Math.PI * 2;
         if (delta < -Math.PI) delta += Math.PI * 2;
         targetRot = { x: lat * DEG, y: current + delta };
-        targetCamDist = homeDist * ZOOM;
+        targetCamDist = Math.min(homeDist * ZOOM, camera.position.length()); // never zooms out from a closer view
+        camFront = true;
     }
 
     // `fromHistory` is true when the address bar drove the change, so no history entry is added
-    function showFestivalCard(targetId, fromHistory) {
+    // `keepReading` leaves the reading state to the caller (which sets it right after, animated)
+    function showFestivalCard(targetId, fromHistory, keepReading) {
         const pin = pinById[targetId];
         if (!pin) return;
-        const festival = pin.userData.festival;
+        const festival = festivalById[targetId];
+        pin.userData.festival = festival;
+        const entry = fromHistory ? history.state : nextEntry(targetId, history.state);
+        listMode = false;
+        navFrom = (entry && entry.from) || null;
+        countryList.hidden = true;
 
         setSelectedMonth(null);
         setRegion(null);
@@ -494,18 +676,11 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.setAttribute("aria-pressed", btn.dataset.target === targetId);
         });
 
-        setReading(false);
+        if (!keepReading) setReading(false);
         // Opening from home adds one history entry (so Back closes the card); switching festivals replaces it.
         // From a reading view, first go back off its /about entry (popstate then replaces the card entry beneath it),
         // so Close and Back always return home, not to the previous festival.
-        if (!fromHistory) {
-            if (pendingSwitch) pendingSwitch = targetId; // a second pick before the step back lands
-            else if (history.state && history.state.about) {
-                pendingSwitch = targetId;
-                history.back();
-            } else if (history.state && history.state.festival) history.replaceState({ festival: targetId }, "", `#${targetId}`);
-            else history.pushState({ festival: targetId }, "", `#${targetId}`);
-        }
+        if (!fromHistory) commitEntry(entry, `#${targetId}`);
 
         if (!panel.contains(document.activeElement)) lastTrigger = document.activeElement;
         panel.classList.add("is-open");
@@ -516,10 +691,36 @@ document.addEventListener("DOMContentLoaded", () => {
         if (title) title.focus({ preventScroll: true });
     }
 
-    // Close button and Escape: step back off the festival's history entry, which closes the card via popstate
+    // History entries: { festival, depth, from? } for a card (depth = entries back to home, from = the country list
+    // it was chosen from), the same plus about:true for a reading view (depth one more), { list: country } for a list
+    function nextEntry(id, prev) {
+        const c = festivalById[id].countries[0];
+        if (!prev) return { festival: id, depth: 1 };
+        if (prev.list) return { festival: id, depth: 2, from: prev.list === c ? c : undefined };
+        const depth = (prev.depth || 1) - (prev.about ? 1 : 0);
+        return { festival: id, depth, from: prev.from === c ? c : undefined };
+    }
+
+    // Opening from home or a list adds one entry; switching replaces it. From a reading view, first go back off its
+    // /about entry (popstate then replaces the card entry beneath it), so Close and Back never land on the previous festival.
+    function commitEntry(entry, url) {
+        const prev = history.state;
+        if (pendingSwitch) pendingSwitch = { entry, url }; // a second pick before the step back lands
+        else if (prev && prev.about) {
+            pendingSwitch = { entry, url };
+            history.back();
+        } else if (prev && (prev.festival || prev.list) && !(prev.list && entry.festival)) history.replaceState(entry, "", url);
+        else history.pushState(entry, "", url);
+    }
+
+    // Close button and Escape: step back off the current history entry, which closes the panel via popstate.
+    // A card chosen from a list returns home in one go (past the list).
     function closeFestival(e) {
         if (e) e.preventDefault();
-        if (history.state && history.state.festival) {
+        const s = history.state;
+        if (s && s.festival && !s.about && s.depth > 1) {
+            history.go(-s.depth);
+        } else if (s && (s.festival || s.list)) {
             history.back();
         } else {
             history.replaceState(null, "", location.pathname + location.search);
@@ -529,12 +730,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Reading view (#<id>/about): the panel widens to show the open festival's long read
     const closeBtn = document.getElementById("back-home-btn");
+    const homeBtn = document.getElementById("home-btn");
     const BACK_ICON = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>'; // a ">" chevron, on purpose
-    function setReading(on) {
+    let readingTimer = 0;
+    // The corner buttons: a chevron steps back one screen (reading view to card, card to its list), a cross closes
+    function updateNav() {
+        const reading = panel.classList.contains("is-reading");
+        closeBtn.innerHTML = !listMode && (reading || navFrom) ? BACK_ICON : "&times;";
+        closeBtn.setAttribute("aria-label", listMode ? "Close festival list" : reading ? "Back to festival summary" : navFrom ? `Back to festivals in ${navFrom}` : "Close festival details");
+        homeBtn.hidden = listMode || !navFrom; // a second cross, to leave the list's festivals for the globe
+    }
+    // `animate` is true for in-page changes within one open festival; opening on /about stays instant
+    function setReading(on, animate) {
+        clearTimeout(readingTimer);
+        animate = !!animate && !reduceMotion; // toggle() needs a real boolean
+        panel.classList.toggle("reading-anim", animate);
+        panel.classList.toggle("reading-out", animate && !on); // keeps the long read on screen while it fades out
+        if (animate) readingTimer = setTimeout(() => panel.classList.remove("reading-anim", "reading-out"), 400);
         panel.classList.toggle("is-reading", on);
         // In the reading view the button goes back to the card (via history), so it looks like a back button
-        closeBtn.innerHTML = on ? BACK_ICON : "&times;";
-        closeBtn.setAttribute("aria-label", on ? "Back to festival summary" : "Close festival details");
+        updateNav();
         if (!on) return;
         panel.scrollTop = 0;
         const heading = panel.querySelector(".festival-card:not([hidden]) .festival-about h3");
@@ -546,8 +761,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const link = e.target.closest('a[href$="/about"]');
         if (!link || !selectedPin) return;
         e.preventDefault();
-        history.pushState({ festival: selectedPin.userData.festival.id, about: true }, "", link.getAttribute("href"));
-        setReading(true);
+        const s = history.state || {};
+        history.pushState({ ...s, festival: selectedPin.userData.festival.id, about: true, depth: (s.depth || 1) + 1 }, "", link.getAttribute("href"));
+        setReading(true, true);
     });
 
     // Returns { id, about } for "#diwali" or "#diwali/about"; about only counts when that festival has a long read
@@ -561,36 +777,42 @@ document.addEventListener("DOMContentLoaded", () => {
     function openFromAddress(id, about) {
         if (!(history.state && history.state.festival)) {
             history.replaceState(null, "", location.pathname + location.search);
-            history.pushState({ festival: id }, "", `#${id}`);
-            if (about) history.pushState({ festival: id, about: true }, "", `#${id}/about`);
+            history.pushState({ festival: id, depth: 1 }, "", `#${id}`);
+            if (about) history.pushState({ festival: id, about: true, depth: 2 }, "", `#${id}/about`);
         }
-        showFestivalCard(id, true);
-        setReading(about);
+        const sameOpen = panel.classList.contains("is-open") && !!panel.querySelector(`#card-${id}:not([hidden])`);
+        showFestivalCard(id, true, sameOpen);
+        setReading(about, sameOpen);
     }
 
     window.addEventListener("popstate", () => {
         if (pendingSwitch) {
             // Landed on the old card's entry after leaving a reading view: it becomes the new festival's (already shown)
-            history.replaceState({ festival: pendingSwitch }, "", `#${pendingSwitch}`);
+            history.replaceState(pendingSwitch.entry, "", pendingSwitch.url);
             pendingSwitch = null;
             return;
         }
         const { id, about } = parseAddress();
         if (festivalById[id]) openFromAddress(id, about);
+        else if (history.state && history.state.list) showCountryList(pinByCountry[history.state.list], true);
         else if (selectedPin) resetToHome();
     });
 
     function resetToHome() {
         const wasOpen = selectedPin !== null;
         selectedPin = null;
+        listMode = false;
+        navFrom = null;
         drawMaps(null);
         setMood("day");
         heroTitle.replaceChildren(...homeTitle);
         drawRing(); // back in day colours
         targetRot = { x: 0, y: globeGroup.rotation.y };
         targetCamDist = homeDist;
+        camFront = true;
 
-        panel.classList.remove("is-open", "is-reading");
+        clearTimeout(readingTimer);
+        panel.classList.remove("is-open", "is-reading", "reading-anim", "reading-out");
         hero.classList.remove("panel-open");
         panel.setAttribute("aria-hidden", "true");
         regionButtons.forEach((btn) => btn.setAttribute("aria-pressed", "false"));
@@ -611,11 +833,12 @@ document.addEventListener("DOMContentLoaded", () => {
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const targets = [dayMap.mesh, ...pinObjects];
+        // A fanned country's own pin is out of play, and its fanned pins in
+        const targets = [dayMap.mesh, ...pinObjects.filter((p) => !(p.userData.fanE > 0.5)), ...fanPins.filter((p) => p.userData.fanOf.userData.fanE > 0.5)];
         if (yearRing.visible) targets.push(yearRing);
         const hit = raycaster.intersectObjects(targets, true)[0] || null;
         // A pin's needle, cap or pennant counts as the pin
-        if (hit && hit.object.parent && pinObjects.includes(hit.object.parent)) hit.object = hit.object.parent;
+        if (hit && isPin(hit.object.parent)) hit.object = hit.object.parent;
         return hit;
     }
 
@@ -652,6 +875,9 @@ document.addEventListener("DOMContentLoaded", () => {
         b.setAttribute("aria-pressed", name === "All");
         regionFilter.append(b);
     });
+    // Stagger index for the entrance animations in style.css
+    regionFilter.querySelectorAll("button").forEach((b, i) => b.style.setProperty("--i", i));
+    document.querySelectorAll(".festival-list li").forEach((li, i) => li.style.setProperty("--i", i));
 
     function setRegion(region) {
         selectedRegion = region;
@@ -706,7 +932,7 @@ document.addEventListener("DOMContentLoaded", () => {
         container.style.cursor = hoveredPin || month !== null ? "pointer" : isHovering ? "" : "default"; // "" is the stylesheet's grab hand
         let label = null;
         if (hoveredPin) {
-            label = hoveredPin.userData.festival.label;
+            label = pinLabel(hoveredPin);
         } else if (month !== null) {
             label = monthSummary(month);
         }
@@ -735,7 +961,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.addEventListener("click", (event) => {
         const hit = hitAt(event);
-        if (hit && pinObjects.includes(hit.object)) showFestivalCard(hit.object.userData.festival.id);
+        if (hit && isPin(hit.object)) openPin(hit.object);
         else if (hit && hit.object === yearRing) {
             const month = monthAt(hit.point);
             if (month !== null) setSelectedMonth(month === selectedMonth ? null : month);
@@ -747,7 +973,97 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", () => showFestivalCard(btn.dataset.target));
     });
 
-    closeBtn.addEventListener("click", closeFestival);
+    // A country with several festivals: the panel lists them (photo, name, month, one line) and a row opens its card
+    const pinByCountry = {};
+    pinObjects.forEach((p) => { pinByCountry[p.userData.country] = p; });
+    function openPin(pin, fromKeyboard) {
+        const { festivals, country } = pin.userData;
+        if (festivals.length === 1) return showFestivalCard(festivals[0].id);
+        tooltip.hidden = true;
+        if (listMode && selectedPin === pin) return countryList.querySelector(fromKeyboard ? "button" : "h2").focus();
+        const prev = history.state;
+        if (prev && prev.festival && prev.from === country) { // its list is the entry beneath: go back to it (popstate shows it)
+            history.go(prev.about ? -2 : -1);
+            return;
+        }
+        showCountryList(pin, false, fromKeyboard);
+    }
+
+    function showCountryList(pin, fromHistory, fromKeyboard) {
+        const { festivals, country } = pin.userData;
+        setSelectedMonth(null);
+        setRegion(null);
+        selectedPin = pin;
+        listMode = true;
+        navFrom = null;
+        focusPin(pin);
+        drawMaps({ countries: [country], neutral: true });
+        heroTitle.replaceChildren(...homeTitle); // the theme stays as it was until a festival is chosen
+        document.querySelectorAll(".festival-card").forEach((card) => { card.hidden = true; });
+        regionButtons.forEach((btn) => btn.setAttribute("aria-pressed", "false"));
+        countryList.querySelector("h2").textContent = `Festivals in ${country}`;
+        countryList.querySelector("ul").replaceChildren(...festivals.map((f) => {
+            const card = document.getElementById(`card-${f.id}`);
+            const month = document.querySelector(`.festival-list .region-btn[data-target="${f.id}"] .fl-month`);
+            const row = document.createElement("li");
+            const b = document.createElement("button");
+            b.type = "button";
+            b.dataset.target = f.id;
+            b.style.setProperty("--c", token(`--festival-${f.color}`));
+            b.style.setProperty("--g", token(`--glow-${f.color}`));
+            const img = document.createElement("img");
+            img.className = "cl-thumb";
+            img.alt = "";
+            img.src = card.querySelector(".card-img").src;
+            const name = document.createElement("span");
+            name.className = "cl-name";
+            name.textContent = f.label;
+            const when = document.createElement("span");
+            when.className = "cl-month";
+            when.textContent = month ? month.firstChild.textContent.trim() : "";
+            const line = document.createElement("span");
+            line.className = "cl-line";
+            line.textContent = card.querySelector(".card-content > p:not([class])").textContent;
+            b.append(img, name, when, line);
+            row.append(b);
+            return row;
+        }));
+        countryList.hidden = false;
+        // Replay the entrance when the list replaces a card or another list
+        countryList.style.animation = "none";
+        void countryList.offsetWidth;
+        countryList.style.animation = "";
+
+        if (!fromHistory) commitEntry({ list: country }, location.pathname + location.search);
+        if (!panel.contains(document.activeElement)) lastTrigger = document.activeElement;
+        setReading(false);
+        panel.classList.add("is-open");
+        hero.classList.add("panel-open");
+        panel.setAttribute("aria-hidden", "false");
+        panel.scrollTop = 0;
+        (fromKeyboard ? countryList.querySelector("button") : countryList.querySelector("h2")).focus({ preventScroll: true });
+        globeStatus.textContent = `${country}: ${festivals.length} festivals, ${festivals.map((f) => f.label).join(" and ")}. Choose one.`;
+    }
+    countryList.addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (b) showFestivalCard(b.dataset.target);
+    });
+    countryList.addEventListener("keydown", (e) => {
+        const items = [...countryList.querySelectorAll("button")];
+        const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+        if (!step || !items.includes(document.activeElement)) return;
+        e.preventDefault();
+        items[(items.indexOf(document.activeElement) + step + items.length) % items.length].focus();
+    });
+
+    // The chevron steps back one screen (its list, or a reading view's card); otherwise it closes
+    closeBtn.addEventListener("click", (e) => {
+        if (navFrom) {
+            e.preventDefault();
+            history.back();
+        } else closeFestival(e);
+    });
+    homeBtn.addEventListener("click", () => history.go(-((history.state && history.state.depth) || 1)));
 
     // Card photos open uncropped in a dialog, with their credit; a click anywhere but the credit closes it
     const viewer = document.getElementById("photo-viewer");
@@ -797,9 +1113,12 @@ document.addEventListener("DOMContentLoaded", () => {
             keyboardMode = true;
             const base = targetRot || globeGroup.rotation;
             targetRot = { x: Math.max(-60 * DEG, Math.min(60 * DEG, base.x + turn[0] * DEG)), y: base.y + turn[1] * DEG };
-        } else if ((e.key === "Enter" || e.key === " ") && facingPin) {
+        } else if (e.key === "+" || e.key === "=") setZoom(zoomGoal() * 1.4);
+        else if (e.key === "-" || e.key === "_") setZoom(zoomGoal() / 1.4);
+        else if (e.key === "0") setZoom(defaultZoom());
+        else if ((e.key === "Enter" || e.key === " ") && facingPin) {
             e.preventDefault();
-            showFestivalCard(facingPin.userData.festival.id);
+            openPin(facingPin, true);
         }
     });
 
@@ -844,10 +1163,118 @@ document.addEventListener("DOMContentLoaded", () => {
         comingUp.style.top = `${listHeading.getBoundingClientRect().top - hero.getBoundingClientRect().top}px`;
     }).observe(document.querySelector(".hero-intro"));
 
+    // Zoom: wheel (and trackpad pinch) over the globe, +/-/0 keys, the buttons by the globe; two-finger pinch is OrbitControls' own
+    container.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // OrbitControls' own wheel zoom is instant; this one eases
+        setZoom(zoomGoal() * Math.exp(-e.deltaY * (e.deltaMode === 1 ? 16 : 1) * (e.ctrlKey ? 0.01 : 0.0015)));
+    }, { passive: false, capture: true });
+    container.addEventListener("touchstart", (e) => { if (e.touches.length > 1) targetCamDist = null; }, { capture: true, passive: true });
+
+    const zoomOutBtn = document.getElementById("zoom-out");
+    const zoomInBtn = document.getElementById("zoom-in");
+    const zoomResetBtn = document.getElementById("zoom-reset");
+    zoomOutBtn.addEventListener("click", () => setZoom(zoomGoal() / 1.4));
+    zoomInBtn.addEventListener("click", () => setZoom(zoomGoal() * 1.4));
+    zoomResetBtn.addEventListener("click", () => setZoom(defaultZoom()));
+    let shownZoom = "";
+    function updateZoomControls(zoom) {
+        const text = `${zoom.toFixed(1)}×`;
+        const key = `${text}${zoom < 1.02}${zoom > MAX_ZOOM - 0.02}`;
+        if (key === shownZoom) return;
+        shownZoom = key;
+        zoomResetBtn.textContent = text;
+        zoomResetBtn.setAttribute("aria-label", `Zoom ${text}. Reset zoom`);
+        zoomOutBtn.setAttribute("aria-disabled", zoom < 1.02);
+        zoomInBtn.setAttribute("aria-disabled", zoom > MAX_ZOOM - 0.02);
+    }
+
+    // Zoom labels: the country and its festival count (the festival names too when close), as HTML so the text stays sharp.
+    // They hide on the far side, dim with their pin, and the lower-priority one of two overlapping labels is hidden.
+    const labelLayer = document.createElement("div");
+    labelLayer.className = "globe-labels";
+    labelLayer.hidden = true;
+    container.append(labelLayer);
+    allPins.forEach((pin) => {
+        const { country, festivals, fanOf } = pin.userData;
+        const el = document.createElement("button");
+        el.type = "button";
+        el.tabIndex = -1; // keyboard users reach the same thing with Enter on the facing pin
+        el.setAttribute("aria-hidden", "true");
+        el.className = "globe-label";
+        // A fanned pin's label is just its festival's name
+        el.classList.toggle("gl-fan", !!fanOf);
+        (fanOf ? [[festivals[0].label, "gl-name"]] : [[country, "gl-name"], [`${festivals.length} ${festivals.length > 1 ? "festivals" : "festival"}`, "gl-count"], [festivals.map((f) => f.label).join(", "), "gl-names"]]).forEach(([text, cls]) => {
+            const line = document.createElement("span");
+            line.className = cls;
+            line.textContent = text;
+            el.append(line);
+        });
+        el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openPin(pin);
+        });
+        pin.userData.label = { el, w: 0, h: 0, detail: false };
+        labelLayer.append(el);
+    });
+    const labelV = new THREE.Vector3();
+    function updateLabels(zoom) {
+        const show = Math.min(1, Math.max(0, (zoom - LABEL_ZOOM) / 0.15));
+        labelLayer.hidden = show === 0;
+        if (show === 0) return;
+        const W = container.clientWidth;
+        const H = container.clientHeight;
+        const edge = globeRadius / camera.position.length(); // a point on the globe is in view when its dot with the camera direction exceeds this
+        const detail = zoom > LABEL_ZOOM + 0.5;
+        const cands = [];
+        allPins.forEach((pin) => {
+            const lab = pin.userData.label;
+            const fanOf = pin.userData.fanOf;
+            const fanE = (fanOf || pin).userData.fanE || 0; // how far this pin's country has fanned
+            pin.getWorldPosition(labelV);
+            const facing = labelV.normalize().dot(motionCam) - edge;
+            const op = show * Math.min(1, Math.max(0, facing / 0.1)) * (pin.userData.dimmed ? 0.3 : 1) * (fanOf ? fanE : 1);
+            const detailed = detail && fanE < 0.5; // fanned pins carry the festival names, so the country label drops them
+            if (!fanOf && detailed !== lab.detail) {
+                lab.detail = detailed;
+                lab.el.classList.toggle("is-detailed", detailed);
+                lab.w = 0;
+            }
+            if (op > 0 && !lab.w) { lab.w = lab.el.offsetWidth; lab.h = lab.el.offsetHeight; }
+            cands.push({ pin, lab, op, facing, rank: (pin === selectedPin ? 2 : 0) + (pin.userData.dimmed ? 0 : 1) + (fanOf ? 1.5 : 0) });
+        });
+        const placed = [];
+        cands.sort((a, b) => b.rank - a.rank || b.facing - a.facing).forEach(({ pin, lab, op }) => {
+            let o = op;
+            if (o > 0) {
+                pin.getWorldPosition(labelV).project(camera);
+                const x = ((labelV.x + 1) / 2) * W;
+                let y = ((1 - labelV.y) / 2) * H + 16 * Math.pow(Math.max(zoom, 1), 0.4); // below the pin's head
+                if (pin.userData.fanE > 0.5) {
+                    // A fanned country's own label sits above its ring, clear of the fanned pins and their labels
+                    const top = Math.min(...pin.userData.fanPins.map((p) => ((1 - p.getWorldPosition(labelV).project(camera).y) / 2) * H));
+                    y = top - lab.h - 26 * Math.pow(Math.max(zoom, 1), 0.4);
+                }
+                const box = [x - lab.w / 2 - 4, y - 4, x + lab.w / 2 + 4, y + lab.h + 4];
+                if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) o = 0;
+                else {
+                    placed.push(box);
+                    lab.el.style.transform = `translate(${x - lab.w / 2}px, ${y}px)`;
+                }
+            }
+            lab.el.style.opacity = o;
+            lab.el.style.pointerEvents = o > 0.5 ? "auto" : "none";
+        });
+    }
+
     // 8. Render loop
     const clock = new THREE.Clock();
+    let lastT = 0;
+    let fanOn = false; // zoomed in far enough that multi-festival pins are fanned (with hysteresis)
     const inkColor = new THREE.Color(token("--ink"));
     const whiteColor = new THREE.Color(0xffffff);
+    const motionPos = new THREE.Vector3();
+    const motionCam = new THREE.Vector3();
 
     function animate() {
         requestAnimationFrame(animate);
@@ -858,14 +1285,14 @@ document.addEventListener("DOMContentLoaded", () => {
             globeGroup.rotation.x += (targetRot.x - globeGroup.rotation.x) * EASE;
             globeGroup.rotation.y += (targetRot.y - globeGroup.rotation.y) * EASE;
             if (Math.abs(targetRot.x - globeGroup.rotation.x) + Math.abs(targetRot.y - globeGroup.rotation.y) < 0.001) targetRot = null;
-        } else if (!isHovering && !selectedPin && !reduceMotion && !keyboardMode && !container.matches(":focus-visible")) {
+        } else if (!isHovering && !selectedPin && !reduceMotion && !keyboardMode && zoomNow() < 1.05 && !container.matches(":focus-visible")) {
             // Holds still for keyboard users (Tab focus or arrows) only; a mouse click focuses the globe too
             globeGroup.rotation.y += 0.0015;
         }
 
         // Zoom: ease the camera toward the front (+z) at the target distance
         if (targetCamDist !== null) {
-            const goal = new THREE.Vector3(0, 0, targetCamDist);
+            const goal = camFront ? new THREE.Vector3(0, 0, targetCamDist) : camera.position.clone().setLength(targetCamDist);
             const len = camera.position.length() + (targetCamDist - camera.position.length()) * EASE;
             camera.position.lerp(goal, EASE).setLength(len);
             if (camera.position.distanceTo(goal) < 0.2) {
@@ -885,7 +1312,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ambientLight.intensity = 0.7 + 0.15 * nightMix;
 
         // Year ring fades in on the home view when there is room for it
-        const ringWanted = !selectedPin && container.clientWidth >= 1100;
+        const zoom = zoomNow();
+        if (!sharp && !SMALL && zoom > SHARP_ZOOM) upgradeMaps();
+        const ringWanted = !selectedPin && container.clientWidth >= 1100 && zoom < 1.15; // too big to fit once zoomed in
         ringMix += ((ringWanted ? 1 : 0) - ringMix) * (reduceMotion ? 1 : 0.08);
         yearRing.material.opacity = ringMix;
         yearRing.visible = ringMix > 0.01;
@@ -906,8 +1335,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (best !== facingPin) {
                 facingPin = best;
                 hoveredPin = best;
-                globeStatus.textContent = best ? `Facing ${best.userData.festival.label}. Press Enter to open it.` : "No festival facing you. Keep turning.";
-                if (best) tooltip.textContent = best.userData.festival.label;
+                const many = best && best.userData.festivals.length > 1;
+                globeStatus.textContent = best ? `Facing ${pinLabel(best)}. Press Enter to ${many ? "choose one" : "open it"}.` : "No festival facing you. Keep turning.";
+                if (best) tooltip.textContent = pinLabel(best);
                 tooltip.hidden = !best;
             }
             if (facingPin) {
@@ -921,29 +1351,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Selected pin glows and pulses; the others dim to 30% and hold still.
         // A hovered (or else selected) month on the year ring, or a chosen region, dims the festivals outside it the same way.
+        // A pin with several festivals cycles their colours (2.5 s hold, 1.5 s fade), pausing while hovered,
+        // and holds the open festival's colour (or the first one's under reduced motion). While its country's list is shown it keeps cycling.
+        const dt = Math.min(t - lastT, 0.1);
+        lastT = t;
         const ringMonth = hoveredMonth ?? selectedMonth;
-        pinObjects.forEach((pin, i) => {
-            const { ring, dayColor, nightColor, festival } = pin.userData;
-            const dimmed = selectedPin
-                ? pin !== selectedPin
-                : (ringMonth !== null && !festival.months.includes(ringMonth)) || (selectedRegion !== null && regionOf[festival.id] !== selectedRegion);
-            const swing = festival.months.includes(THIS_MONTH) ? 0.3 : 0.15; // festivals on now pulse more
+        const matches = (f) => (ringMonth === null || f.months.includes(ringMonth)) && (selectedRegion === null || regionOf[f.id] === selectedRegion);
+        motionCam.copy(camera.position).normalize();
+        const pinZoom = Math.pow(Math.max(zoom, 1), -0.6);
+        if (zoom > FAN_ON) fanOn = true;
+        else if (zoom < FAN_OFF) fanOn = false;
+        allPins.forEach((pin, i) => {
+            const { ring, dayColor, nightColor, festival, festivals, palette, fanOf } = pin.userData;
+            // A fanned pin is fully shown only once its country has fanned; the country's own pin fades as it does. Only the open
+            // festival's country fans while a card or list is open.
+            if (!fanOf && pin.userData.fanPins) {
+                const want = fanOn && (!selectedPin || pin === selectedPin) ? 1 : 0;
+                const u = pin.userData;
+                u.fan = reduceMotion ? want : u.fan + Math.sign(want - u.fan) * Math.min(Math.abs(want - u.fan), dt / FAN_TIME);
+                u.fanE = u.fan * u.fan * (3 - 2 * u.fan);
+            }
+            const show = fanOf ? fanOf.userData.fanE : 1 - (pin.userData.fanE || 0);
+            const sel = fanOf ? selectedPin === fanOf && !listMode && fanOf.userData.festival === festival : pin === selectedPin;
+            const hov = pin === hoveredPin || (fanOf && fanOf === facingPin); // the keyboard's facing country lights all its fanned pins
+            const dimmed = fanOf
+                ? (selectedPin ? !(selectedPin === fanOf && (listMode || sel)) : !matches(festival))
+                : selectedPin ? pin !== selectedPin : !festivals.some(matches);
+            pin.userData.dimmed = dimmed; // the labels read it, even for a pin that is hidden
+            pin.visible = ring.visible = show > 0.001;
+            if (!pin.visible) return;
+            if (fanOf) placeFan(pin, fanOf.userData.fanE, pinZoom);
+            if (festivals.length > 1) {
+                let a = 0;
+                let b = 0;
+                let mix = 0;
+                if (pin === selectedPin && !listMode) a = b = festivals.indexOf(festival);
+                else if (!reduceMotion) {
+                    if (pin !== hoveredPin && !pin.userData.fanE) pin.userData.cycle += dt; // paused while hovered or fanned
+                    const slot = pin.userData.cycle / 4;
+                    a = Math.floor(slot) % festivals.length;
+                    b = (a + 1) % festivals.length;
+                    mix = Math.min(1, Math.max(0, ((slot % 1) * 4 - 2.5) / 1.5));
+                }
+                dayColor.copy(palette[a].day).lerp(palette[b].day, mix);
+                nightColor.copy(palette[a].night).lerp(palette[b].night, mix);
+            }
+            const swing = festivals.some((f) => f.months.includes(THIS_MONTH)) ? 0.3 : 0.15; // festivals on now pulse more
             const pulse = reduceMotion || dimmed ? 1 : 1 + swing * Math.sin(t * 2.5 + i);
             pin.material.color.copy(dayColor).lerp(nightColor, nightMix);
             // The selected pin's ring contrasts with its highlighted country (ink by day, white at night)
-            if (pin === selectedPin) ring.material.color.copy(inkColor).lerp(whiteColor, nightMix);
+            if (sel) ring.material.color.copy(inkColor).lerp(whiteColor, nightMix);
             else ring.material.color.copy(pin.material.color);
-            pin.material.opacity = dimmed ? 0.3 : 1;
+            pin.material.opacity = (dimmed ? 0.3 : 1) * show;
             if (pin.material.emissive) pin.material.emissive.copy(pin.material.color).multiplyScalar(0.55); // lantern glow
             pin.children.forEach((child) => {
                 if (child.userData.tint) child.material.color.copy(pin.material.color);
                 child.material.opacity = pin.material.opacity;
+                if (child.isSprite) child.visible = pin !== selectedPin; // hide the count badge while its list or one of its cards is open
             });
-            ring.material.opacity = dimmed ? 0.2 : 0.8;
-            // Selected pin shrinks so small countries (Germany) stay visible; its ring marks the spot
-            pin.scale.setScalar(pin === selectedPin ? 0.7 : pin === hoveredPin ? 1.4 : 1);
-            ring.scale.setScalar(pin === selectedPin ? 1.1 * pulse : pin === hoveredPin ? 1.5 : pulse);
+            ring.material.opacity = (dimmed ? 0.2 : 0.8) * show;
+            // Idle motion: still for dimmed pins, pins on the far side of the globe and reduced motion
+            const live = !reduceMotion && !dimmed && pin.getWorldPosition(motionPos).normalize().dot(motionCam) > 0.2;
+            animatePin(pin, pin.userData.style, t, live ? (sel || hov || swing > 0.2 ? 2 : 1) : 0, i * 2.4);
+            // Selected pin shrinks so small countries (Germany) stay visible; its ring marks the spot (a fanned pin is small already)
+            // Zoomed in, pins grow on screen only gently (world size shrinks as z^-0.6), and the hit area follows
+            const size = (fanOf ? FAN_SCALE : 1) * pinZoom * show;
+            pin.scale.setScalar((sel ? (fanOf ? 1 : 0.7) : hov ? 1.4 : 1) * size);
+            ring.scale.setScalar((sel ? 1.1 * pulse : hov ? 1.5 : pulse) * Math.pow(size, 1.5));
         });
+        updateLabels(zoom);
+        updateZoomControls(zoom);
 
         controls.update();
         renderer.render(scene, camera);
@@ -954,8 +1431,13 @@ document.addEventListener("DOMContentLoaded", () => {
     function fitCamera() {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
+        const z = zoomNow(); // a resize keeps the visitor's zoom
+        const was = homeDist;
         homeDist = Math.max(220, 181 / camera.aspect);
-        camera.position.setLength(selectedPin ? homeDist * ZOOM : homeDist);
+        controls.minDistance = homeDist / MAX_ZOOM;
+        controls.maxDistance = homeDist;
+        camera.position.setLength(homeDist / z);
+        if (targetCamDist !== null) targetCamDist *= homeDist / was;
         renderer.setSize(container.clientWidth, container.clientHeight);
     }
     fitCamera();
@@ -964,4 +1446,5 @@ document.addEventListener("DOMContentLoaded", () => {
     // Shared link such as HCI.html#diwali
     const start = parseAddress();
     if (festivalById[start.id]) openFromAddress(start.id, start.about);
+    else if (history.state && history.state.list) history.replaceState(null, "", location.pathname + location.search); // a list has no link: a reload goes home
 });

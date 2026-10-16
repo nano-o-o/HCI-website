@@ -4,15 +4,15 @@ An interactive 3D globe for discovering festivals around the world, made as a cl
 
 **Live site:** https://nano-o-o.github.io/HCI-website/
 
-Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Lunar New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated. Clicking a card's photo shows the whole picture.
+Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Lunar New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated and has photos of its food and, for most festivals, of people celebrating. Clicking a card's or reading view's photo shows the whole picture.
 
 ## Festivals
 
-Timkat · Lunar New Year · Rio Carnival · Holi · Songkran · Vesak · Matariki · Osun-Osogbo · Oktoberfest · Diwali · Día de Muertos · Hanukkah · Eid al-Fitr
+Lunar New Year · Rio Carnival · Holi · Songkran · Oktoberfest · Diwali · Día de Muertos · Eid al-Fitr
 
 ## Features
 
-- A 3D globe with a pin for each festival; you can choose pushpin, lantern, flag, map marker, candle or firework pins
+- A 3D globe with one pin per country (a country with several festivals shows a count badge, cycles through their colours and opens a list of them in the side panel); you can choose pushpin, lantern, flag, map marker, candle or firework pins
 - A year ring around the globe showing when each festival falls (desktop only)
 - A region filter that dims the festivals and pins outside the chosen region (desktop and tablet)
 - "Happening now" and "Coming up" lists based on today's date
@@ -49,7 +49,7 @@ A walkthrough of each part of `HCI.html`, `style.css` and `globe.js`, and how th
 
 ## Credits
 
-- **Photos:** from Wikimedia Commons, under Creative Commons licences. Each photo's author and licence are credited on its card, with a link to the original file.
+- **Photos:** from Wikimedia Commons, under Creative Commons licences or in the public domain. Each photo's author and licence are credited on its card or reading view, with a link to the original file.
 - **three.js** r128 (MIT) for the globe
 - **topojson-client** 3.1.0 (ISC) and **Natural Earth** 1:110m country data (public domain, via world-atlas 2.0.2)
 - **Fonts:** Fraunces and Alegreya Sans (SIL Open Font License)
