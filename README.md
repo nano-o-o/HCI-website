@@ -13,12 +13,13 @@ Cape Town Minstrel Carnival · Lunar New Year · Tết · Festa de Iemanjá · S
 ## Features
 
 - A 3D globe with one pin per country (a country with several festivals shows a count badge, cycles through their colours and opens a list of them in the side panel); you can choose pushpin, lantern, flag, map marker, candle or firework pins
+- Zoom with the mouse wheel, a pinch or the zoom buttons; zoomed in, countries get name labels and a country's festivals spread out into separate pins
 - A year ring around the globe showing when each festival falls (desktop only)
 - A region filter that dims the festivals and pins outside the chosen region (desktop and tablet)
 - "Happening now" and "Coming up" lists based on today's date
 - Day and night themes that follow the festival
 - Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
-- Keyboard support: the arrow keys turn the globe and Enter opens the festival facing you
+- Keyboard support: the arrow keys turn the globe, Enter opens the festival facing you, and + and - zoom
 - Layouts for desktop, tablet and phone
 
 ## Running it
