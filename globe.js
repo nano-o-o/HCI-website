@@ -131,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Globe: a day map and a night map, crossfaded by fading the night sphere in and out
     const globeRadius = 60;
     const globeGroup = new THREE.Group();
+    globeGroup.rotation.y = -(45 + 90) * DEG; // opens facing 45°E, so Europe and Africa fill the visible left side of the cropped globe
     scene.add(globeGroup);
 
     function makeMap(mood, radius) {
