@@ -212,8 +212,8 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Everything that changes colour with the theme fades like a sunset */
-body,
+/* Everything that changes colour with the theme fades like a sunset. Not body: its colour is inherited, so fading it
+   restyles the whole page (every reading view too) each frame, and the stage covers its background anyway */
 .hero-intro h1,
 .hero-intro p,
 .fl-meta,
