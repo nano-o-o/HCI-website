@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // User zoom is a factor z: the camera sits at homeDist / z. Phones and narrow windows stay at 1.3x, where the 2048 map is still sharp;
     // elsewhere the maps are rebuilt at 4096 the first time the visitor zooms past that.
     const SMALL = window.matchMedia("(pointer: coarse), (max-width: 720px)").matches;
-    const MAX_ZOOM = SMALL ? 1.3 : 2.5;
+    const MAX_ZOOM = SMALL ? 1.3 : 1.6;
     const SHARP_ZOOM = 1.28;
     const LABEL_ZOOM = SMALL ? 1.2 : 1.4; // country labels fade in above this
 

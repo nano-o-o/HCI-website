@@ -1309,19 +1309,29 @@ body,
     }
 }
 
-/* Zoom buttons: a small pill at the bottom centre of the stage (left of About on phones) */
+/* Zoom buttons: a small pill left of About in the bottom-right corner (top-right on phones) */
 .zoom-ctl {
     position: absolute;
-    left: 50%;
+    right: calc(1.5rem + 34px + 8px);
     bottom: 1.5rem;
     z-index: 10;
     display: flex;
-    transform: translateX(-50%);
     border-radius: 999px;
     background: var(--chip-bg);
     border: 1px solid var(--chip-border);
     backdrop-filter: blur(8px);
-    transition: background-color var(--theme-fade), border-color 0.2s ease;
+    transition: background-color var(--theme-fade), border-color 0.2s ease, right 0.35s ease;
+}
+
+/* The details panel covers the corner, so the pill moves left of it (and of the wider reading view) */
+@media (min-width: 721px) {
+    .globe-hero.panel-open .zoom-ctl {
+        right: calc(1.5rem + 380px + 1rem);
+    }
+
+    .globe-hero:has(.info-panel.is-reading) .zoom-ctl {
+        right: calc(1.5rem + min(640px, 100% - 340px) + 1rem);
+    }
 }
 
 .zoom-ctl button {
