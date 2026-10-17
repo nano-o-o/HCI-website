@@ -1353,6 +1353,10 @@ document.addEventListener("DOMContentLoaded", () => {
         oktoberfest: { kind: "confetti", cols: ["#1d4ed8", "#2563eb", "#ffffff", "#f8fafc"] }, // Bavarian blue and white
         guelaguetza: { kind: "confetti", cols: ["#be185d", "#f472b6", "#facc15", "#16a34a", "#dc2626"] }, // embroidered regional dress
         "adelaide-fringe": { kind: "confetti", cols: ["#ec4899", "#f9a8d4", "#a855f7", "#facc15"] }, // Fringe pink
+        "lantern-festival": { kind: "lantern", cols: ["#dc2626", "#ef4444", "#b91c1c"] }, // red paper globes; caps drawn gold
+        "loy-krathong": { kind: "glow", cols: ["#fde68a", "#facc15", "#fbbf24", "#fff7d6"] }, // krathong candles, not sky lanterns (the card notes their bans)
+        "sapporo-snow-festival": { kind: "snow", cols: ["#ffffff", "#f8fafc", "#e0f2fe"] },
+        "bon-om-touk": { kind: "spray", cols: ["#ffffff", "#e0f2fe", "#7dd3fc", "#96e1c3", "#0f7869"] }, // river spray off the oars
     };
     const fxCanvas = document.createElement("canvas");
     fxCanvas.className = "globe-fx";
@@ -1377,16 +1381,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const s = Math.max(1, Math.min(2, Math.min(W, H) / 300)); // sized to the globe on screen
         const make = (k, n, speed) => {
             for (let i = 0; i < n * Math.sqrt(s); i++) {
-                const a = rand(0, Math.PI * 2);
+                const a = k === "spray" ? rand(-2.4, -0.75) : rand(0, Math.PI * 2); // spray is thrown upward
                 const sp = rand(...speed) * s;
                 fxParts.push({
                     kind: k, x, y, t: 0, col: cols[(Math.random() * cols.length) | 0],
-                    vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (k === "petal" || k === "confetti" ? 60 : k === "speck" ? 0 : 30) * s,
-                    g: { spark: 130, puff: 0, petal: 90, speck: 60, confetti: 110 }[k] * s,
-                    drag: { spark: 0.4, puff: 1.6, petal: 0.4, speck: 1, confetti: 1.1 }[k],
-                    size: { spark: rand(1.2, 2.2) * Math.sqrt(s), puff: rand(8, 14) * s, petal: rand(4, 6) * s, confetti: rand(5, 7) * s, speck: rand(1.2, 2.4) }[k],
+                    vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - ({ petal: 60, confetti: 60, snow: 40, speck: 0, spray: 0, glow: 0 }[k] ?? 30) * s,
+                    g: { spark: 130, puff: 0, petal: 90, speck: 60, confetti: 110, lantern: -45, glow: -8, snow: 40, spray: 260 }[k] * s,
+                    drag: { spark: 0.4, puff: 1.6, petal: 0.4, speck: 1, confetti: 1.1, lantern: 1.4, glow: 1.2, snow: 1.5, spray: 0.3 }[k],
+                    size: { spark: rand(1.2, 2.2) * Math.sqrt(s), puff: rand(8, 14) * s, petal: rand(4, 6) * s, confetti: rand(5, 7) * s, speck: rand(1.2, 2.4), lantern: rand(5, 7) * s, glow: rand(2.5, 3.8) * Math.sqrt(s), snow: rand(2.5, 4) * s, spray: rand(1.5, 2.5) * Math.sqrt(s) }[k],
                     grow: k === "puff" ? rand(25, 45) * s : 0,
-                    life: rand(1.2, 1.8), delay: k === "speck" ? 0 : rand(0, 0.15),
+                    life: k === "lantern" || k === "glow" || k === "snow" ? rand(1.6, 2.2) : rand(1.2, 1.8), delay: k === "speck" ? 0 : k === "glow" ? rand(0, 0.4) : rand(0, 0.15),
                     rot: rand(0, 6.28), vr: rand(-4, 4), sway: rand(0, 6.28),
                 });
             }
@@ -1396,6 +1400,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (kind === "puff") { make("puff", 22, [30, 110]); make("speck", 40, [60, 160]); }
         if (kind === "petal") make("petal", 45, [60, 170]);
         if (kind === "confetti") make("confetti", 70, [90, 220]);
+        if (kind === "lantern") make("lantern", 18, [50, 140]);
+        if (kind === "glow") make("glow", 30, [40, 130]);
+        if (kind === "snow") make("snow", 45, [60, 170]);
+        if (kind === "spray") make("spray", 70, [120, 240]);
     }
 
     function drawBurst(dt) {
@@ -1408,14 +1416,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const d = Math.exp(-p.drag * dt);
             p.vx *= d;
             p.vy = p.vy * d + p.g * dt;
-            if (p.kind === "petal" || p.kind === "confetti") p.x += Math.sin(p.t * 3 + p.sway) * 20 * dt;
+            if (p.kind !== "spark" && p.kind !== "puff" && p.kind !== "speck" && p.kind !== "spray") p.x += Math.sin(p.t * 3 + p.sway) * 20 * dt;
             p.x += p.vx * dt;
             p.y += p.vy * dt;
             p.rot += p.vr * dt;
             const k = p.t / p.life;
             fx.save();
             fx.globalAlpha = k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85;
-            fx.globalCompositeOperation = night && p.kind !== "petal" && p.kind !== "confetti" ? "lighter" : "source-over";
+            // only small sparks and soft puffs add up at night; bigger or solid shapes would turn into a white blob
+            fx.globalCompositeOperation = night && (p.kind === "spark" || p.kind === "puff" || p.kind === "speck") ? "lighter" : "source-over";
             fx.fillStyle = fx.strokeStyle = p.col;
             fx.beginPath();
             if (p.kind === "spark") {
@@ -1438,6 +1447,42 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (p.kind === "speck") {
                 fx.arc(p.x, p.y, p.size, 0, 6.28);
                 fx.fill();
+            } else if (p.kind === "spray") {
+                fx.lineWidth = p.size;
+                fx.lineCap = "round";
+                fx.moveTo(p.x, p.y);
+                fx.lineTo(p.x - p.vx * 0.03, p.y - p.vy * 0.03); // a droplet stretched along its arc
+                fx.stroke();
+            } else if (p.kind === "glow") {
+                fx.globalAlpha *= 0.8 + 0.2 * Math.sin(p.t * 18 + p.sway); // candle flicker
+                fx.shadowColor = p.col;
+                fx.shadowBlur = 16;
+                fx.arc(p.x, p.y, p.size, 0, 6.28);
+                fx.fill();
+            } else if (p.kind === "snow") {
+                fx.translate(p.x, p.y);
+                fx.rotate(p.rot * 0.3);
+                fx.lineWidth = Math.max(1, p.size / 3);
+                fx.lineCap = "round";
+                fx.shadowColor = "#1e78c3"; // a faint blue edge so white flakes show on the light globe
+                fx.shadowBlur = 3;
+                for (let i = 0; i < 3; i++) {
+                    fx.moveTo(0, -p.size);
+                    fx.lineTo(0, p.size);
+                    fx.rotate(Math.PI / 3);
+                }
+                fx.stroke();
+            } else if (p.kind === "lantern") {
+                fx.translate(p.x, p.y);
+                fx.rotate(Math.sin(p.t * 2 + p.sway) * 0.15);
+                fx.shadowColor = "#facc15";
+                fx.shadowBlur = 10;
+                fx.ellipse(0, 0, p.size, p.size * 0.85, 0, 0, 6.28);
+                fx.fill();
+                fx.shadowBlur = 0;
+                fx.fillStyle = "#facc15"; // gold caps
+                fx.fillRect(-p.size * 0.35, -p.size * 1.05, p.size * 0.7, p.size * 0.3);
+                fx.fillRect(-p.size * 0.35, p.size * 0.75, p.size * 0.7, p.size * 0.3);
             } else {
                 fx.translate(p.x, p.y);
                 fx.rotate(p.rot);

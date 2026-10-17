@@ -18,7 +18,7 @@ Cape Town Minstrel Carnival · Lunar New Year · Tết · Festa de Iemanjá · S
 - A region filter that dims the festivals and pins outside the chosen region (desktop and tablet)
 - "Happening now" and "Coming up" lists based on today's date
 - Day and night themes that follow the festival
-- A short burst when some festivals open: sparks (Diwali, Tihar, Lunar New Year, Tết, Bastille Day, Las Fallas, Dubai Shopping Festival, Vivid Sydney), coloured clouds (Holi, La Tomatina, Songkran), flower petals (Día de Muertos, Festa de Iemanjá, Durga Puja, Nowruz, Melbourne Cup) or paper confetti (Rio Carnival, Mardi Gras, Venice Carnival, Cape Town Minstrel Carnival, Viña del Mar, Coachella, Oktoberfest, Guelaguetza, Adelaide Fringe)
+- A short burst when some festivals open: sparks (Diwali, Tihar, Lunar New Year, Tết, Bastille Day, Las Fallas, Dubai Shopping Festival, Vivid Sydney), coloured clouds (Holi, La Tomatina, Songkran), flower petals (Día de Muertos, Festa de Iemanjá, Durga Puja, Nowruz, Melbourne Cup), paper confetti (Rio Carnival, Mardi Gras, Venice Carnival, Cape Town Minstrel Carnival, Viña del Mar, Coachella, Oktoberfest, Guelaguetza, Adelaide Fringe), rising red lanterns (Lantern Festival), drifting candle lights (Loy Krathong), snow (Sapporo Snow Festival) or river spray (Bon Om Touk)
 - Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
 - Keyboard support: the arrow keys turn the globe, Enter opens the festival facing you, and + and - zoom
 - Layouts for desktop, tablet and phone
