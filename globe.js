@@ -1109,6 +1109,8 @@ document.addEventListener("DOMContentLoaded", () => {
         setZoom(zoomGoal() * Math.exp(-e.deltaY * (e.deltaMode === 1 ? 16 : 1) * (e.ctrlKey ? 0.01 : 0.0015)));
     }, { passive: false, capture: true });
     container.addEventListener("touchstart", (e) => { if (e.touches.length > 1) targetCamDist = null; }, { capture: true, passive: true });
+    // A drag stops the swing back to the front (it would pull the camera back every frame); the zoom still eases
+    controls.addEventListener("start", () => { camFront = false; });
 
     const zoomOutBtn = document.getElementById("zoom-out");
     const zoomInBtn = document.getElementById("zoom-in");
