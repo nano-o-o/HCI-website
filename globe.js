@@ -696,6 +696,11 @@ document.addEventListener("DOMContentLoaded", () => {
         focusPin(pin);
         drawMaps(festival);
         setMood(festival.mood);
+        if (!keepReading) {
+            // Not when the same card comes back (Back from its reading view); a new festival cuts the last burst short
+            fxParts = [];
+            burstPending = BURSTS[targetId] && !reduceMotion ? targetId : null;
+        }
         // Name on its own line, kept whole so "Eid al-Fitr" never breaks at its hyphen
         const name = document.createElement("span");
         name.className = "hero-name";
@@ -1320,6 +1325,108 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // 5d. Festival bursts: a 2 s burst out of the country when its festival opens, once the spin settles.
+    // A see-through 2D canvas over the globe; nothing under reduced motion. Festivals without an entry get none.
+    const BURSTS = {
+        diwali: { kind: "spark", cols: ["#fde047", "#facc15", "#fb923c", "#fff7d6"] },
+        holi: { kind: "puff", cols: ["#db2777", "#f472b6", "#facc15", "#22c55e", "#3b82f6", "#a855f7"] }, // gulal shades
+        "dia-de-muertos": { kind: "petal", cols: ["#f59e0b", "#ea580c", "#fdba74", "#fbbf24"] }, // marigolds
+    };
+    const fxCanvas = document.createElement("canvas");
+    fxCanvas.className = "globe-fx";
+    fxCanvas.setAttribute("aria-hidden", "true");
+    container.append(fxCanvas);
+    const fx = fxCanvas.getContext("2d");
+    let fxParts = [];
+    let burstPending = null; // festival id waiting for the spin to finish
+    const rand = (a, b) => a + Math.random() * (b - a);
+
+    function startBurst(id, pin) {
+        const { kind, cols } = BURSTS[id];
+        const W = container.clientWidth;
+        const H = container.clientHeight;
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        fxCanvas.width = W * dpr;
+        fxCanvas.height = H * dpr;
+        fx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const v = pin.getWorldPosition(new THREE.Vector3()).project(camera);
+        const x = ((v.x + 1) / 2) * W;
+        const y = ((1 - v.y) / 2) * H;
+        const s = Math.max(1, Math.min(2, Math.min(W, H) / 300)); // sized to the globe on screen
+        const make = (k, n, speed) => {
+            for (let i = 0; i < n * Math.sqrt(s); i++) {
+                const a = rand(0, Math.PI * 2);
+                const sp = rand(...speed) * s;
+                fxParts.push({
+                    kind: k, x, y, t: 0, col: cols[(Math.random() * cols.length) | 0],
+                    vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (k === "petal" ? 60 : k === "speck" ? 0 : 30) * s,
+                    g: { spark: 130, puff: 0, petal: 90, speck: 60 }[k] * s,
+                    drag: { spark: 0.4, puff: 1.6, petal: 0.4, speck: 1 }[k],
+                    size: { spark: rand(1.2, 2.2) * Math.sqrt(s), puff: rand(8, 14) * s, petal: rand(4, 6) * s, speck: rand(1.2, 2.4) }[k],
+                    grow: k === "puff" ? rand(25, 45) * s : 0,
+                    life: rand(1.2, 1.8), delay: k === "speck" ? 0 : rand(0, 0.15),
+                    rot: rand(0, 6.28), vr: rand(-4, 4), sway: rand(0, 6.28),
+                });
+            }
+        };
+        fxParts = [];
+        if (kind === "spark") make("spark", 80, [60, 170]);
+        if (kind === "puff") { make("puff", 22, [30, 110]); make("speck", 40, [60, 160]); }
+        if (kind === "petal") make("petal", 45, [60, 170]);
+    }
+
+    function drawBurst(dt) {
+        fx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+        const night = nightMix > 0.5;
+        fxParts = fxParts.filter((p) => {
+            if (p.delay > 0) { p.delay -= dt; return true; }
+            p.t += dt;
+            if (p.t >= p.life) return false;
+            const d = Math.exp(-p.drag * dt);
+            p.vx *= d;
+            p.vy = p.vy * d + p.g * dt;
+            if (p.kind === "petal") p.x += Math.sin(p.t * 3 + p.sway) * 20 * dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.rot += p.vr * dt;
+            const k = p.t / p.life;
+            fx.save();
+            fx.globalAlpha = k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85;
+            fx.globalCompositeOperation = night && p.kind !== "petal" ? "lighter" : "source-over";
+            fx.fillStyle = fx.strokeStyle = p.col;
+            fx.beginPath();
+            if (p.kind === "spark") {
+                fx.lineWidth = p.size;
+                fx.lineCap = "round";
+                fx.shadowColor = p.col;
+                fx.shadowBlur = 6;
+                fx.moveTo(p.x, p.y);
+                fx.lineTo(p.x - p.vx * 0.04, p.y - p.vy * 0.04); // a short trail along its path
+                fx.stroke();
+            } else if (p.kind === "puff") {
+                const r = p.size + p.grow * Math.min(1, k * 1.5);
+                const g = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+                g.addColorStop(0, p.col);
+                g.addColorStop(1, p.col + "00");
+                fx.globalAlpha *= 0.7;
+                fx.fillStyle = g;
+                fx.arc(p.x, p.y, r, 0, 6.28);
+                fx.fill();
+            } else if (p.kind === "speck") {
+                fx.arc(p.x, p.y, p.size, 0, 6.28);
+                fx.fill();
+            } else {
+                fx.translate(p.x, p.y);
+                fx.rotate(p.rot);
+                fx.scale(1, 0.55 + 0.45 * Math.sin(p.t * 6 + p.sway)); // petal flutter
+                fx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, 6.28);
+                fx.fill();
+            }
+            fx.restore();
+            return true;
+        });
+    }
+
     // 8. Render loop
     const clock = new THREE.Clock();
     let lastT = 0;
@@ -1478,6 +1585,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         updateLabels(zoom);
         updateZoomControls(zoom);
+        if (burstPending && !targetRot) {
+            const u = selectedPin && selectedPin.userData;
+            if (u && u.festival.id === burstPending && !listMode) {
+                const fanned = u.fanE > 0.5 && u.fanPins.find((p) => p.userData.festival === u.festival); // burst from its own pin in the ring
+                startBurst(burstPending, fanned || selectedPin);
+            }
+            burstPending = null;
+        }
+        if (fxParts.length) drawBurst(dt);
+        else if (fxCanvas.width) fxCanvas.width = 0; // done: clear and free the canvas
 
         controls.update();
         renderer.render(scene, camera);
