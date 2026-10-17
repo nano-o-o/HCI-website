@@ -12,8 +12,8 @@ Cape Town Minstrel Carnival · Chinese New Year · Tết · Festa de Iemanjá ·
 
 ## Features
 
-- A 3D globe with one pin per country (a country with several festivals shows a count badge, cycles through their colours and opens a list of them in the side panel); you can choose pushpin, lantern, flag, map marker, candle or firework pins
-- Zoom with the mouse wheel, a pinch or the zoom buttons; zoomed in, countries get name labels and a country's festivals spread out into separate pins
+- A 3D globe with one pin per festival, at its own city or site; you can choose pushpin, lantern, flag, map marker, candle or firework pins
+- Zoom with the mouse wheel, a pinch or the zoom buttons; zoomed in, pins get festival name labels
 - A region filter that dims the festivals and pins outside the chosen region (desktop and tablet)
 - An "On now" badge on festivals happening this month
 - Day and night themes that follow the festival
