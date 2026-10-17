@@ -16,10 +16,10 @@ const EID_MONTHS = NOW.getFullYear() in EID_MONTH ? [EID_MONTH[NOW.getFullYear()
 // Pins are one per country: a festival joins the pin of its first `countries` entry (a second festival there adds a count badge,
 // a colour cycle and a festival list in the panel), and a new country's pin sits at the first festival's lat/lon.
 // `color` names the token pair (--festival-<color> by day, --glow-<color> at night); `mood` is the theme the festival opens in;
-// `months` (0 = January) drive the "On now" label and the year ring.
+// `months` (0 = January) drive the "On now" label.
 const FESTIVALS = [
     { id: "diwali", label: "Diwali", lat: 20.5937, lon: 78.9629, color: "diwali", mood: "night", months: [9, 10], countries: ["India"] },
-    { id: "lunar-new-year", label: "Lunar New Year", lat: 35.8617, lon: 104.1954, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
+    { id: "lunar-new-year", label: "Chinese New Year", lat: 35.8617, lon: 104.1954, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
     { id: "lantern-festival", label: "Lantern Festival", lat: 35.8617, lon: 104.1954, color: "lantern", mood: "night", months: [1, 2], countries: ["China"] },
     { id: "eid", label: "Eid al-Fitr", lat: 23.8859, lon: 45.0792, color: "eid", mood: "day", months: EID_MONTHS, countries: ["Saudi Arabia"], related: MUSLIM_MAJORITY },
     { id: "rio-carnival", label: "Rio Carnival", lat: -14.235, lon: -51.9253, color: "rio", mood: "night", months: [1, 2], countries: ["Brazil"] },
@@ -561,73 +561,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 5b. Year ring: a calendar around the globe; hovering a month dims the festivals outside it.
-    // It always faces the camera and only shows on the home view when the stage is wide enough.
-    const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const RING_IN = globeRadius * 1.14;
-    const RING_OUT = globeRadius * 1.34;
-    const ringCanvas = document.createElement("canvas");
-    ringCanvas.width = ringCanvas.height = 1024;
-    const ringTexture = new THREE.CanvasTexture(ringCanvas);
-    const yearRing = new THREE.Mesh(
-        new THREE.PlaneGeometry(RING_OUT * 2, RING_OUT * 2),
-        new THREE.MeshBasicMaterial({ map: ringTexture, transparent: true, depthWrite: false, opacity: 0 })
-    );
-    yearRing.visible = false;
-    scene.add(yearRing);
-    let ringMix = 0;
-    let hoveredMonth = null;  // month under the pointer on the ring (previews it)
-    let selectedMonth = null; // month clicked on the ring (stays until cleared)
-
-    function drawRing() {
-        const ctx = ringCanvas.getContext("2d");
-        const k = 512 / RING_OUT; // canvas px per world unit
-        const seg = (Math.PI * 2) / 12;
-        ctx.clearRect(0, 0, 1024, 1024);
-        ctx.save();
-        ctx.translate(512, 512);
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        for (let m = 0; m < 12; m++) {
-            const start = m * seg - Math.PI / 2; // January at the top, running clockwise
-            const mid = start + seg / 2;
-            const picked = m === selectedMonth;
-            const active = m === hoveredMonth || picked;
-            const now = m === THIS_MONTH;
-            ctx.beginPath();
-            ctx.arc(0, 0, globeRadius * 1.17 * k, start + 0.025, start + seg - 0.025);
-            ctx.strokeStyle = picked ? token("--accent-text") : active ? token("--text") : token("--chip-border");
-            ctx.lineWidth = active ? 7 : 4;
-            ctx.stroke();
-            ctx.fillStyle = active || now ? token("--accent-text") : token("--text-muted");
-            ctx.font = `${active || now ? 700 : 400} 24px "Alegreya Sans", sans-serif`;
-            const lr = globeRadius * 1.255 * k;
-            ctx.fillText(MONTH_NAMES[m].slice(0, 3), Math.cos(mid) * lr, Math.sin(mid) * lr);
-            const here = FESTIVALS.filter((f) => f.months.includes(m));
-            here.forEach((f, j) => {
-                const a = mid + (j - (here.length - 1) / 2) * 0.09;
-                const r = globeRadius * 1.17 * k; // dots sit on the month arc
-                ctx.beginPath();
-                ctx.arc(Math.cos(a) * r, Math.sin(a) * r, 8, 0, Math.PI * 2);
-                ctx.fillStyle = token(`--festival-${f.color}`);
-                ctx.fill();
-            });
-        }
-        ctx.restore();
-        ringTexture.needsUpdate = true;
-    }
-    drawRing();
-    document.fonts.ready.then(() => { if (!selectedPin) drawRing(); });
-
-    // Month (0-11) under a world-space point on the ring, or null off the band
-    function monthAt(point) {
-        const p = yearRing.worldToLocal(point.clone());
-        const r = Math.hypot(p.x, p.y);
-        if (r < RING_IN || r > RING_OUT) return null;
-        const angle = (Math.atan2(p.x, p.y) + Math.PI * 2) % (Math.PI * 2); // 0 at the top, clockwise
-        return Math.floor(angle / (Math.PI / 6));
-    }
-
     // 6. Interaction state
     const hero = document.getElementById("globe-section");
     const panel = document.getElementById("info-panel");
@@ -690,7 +623,6 @@ document.addEventListener("DOMContentLoaded", () => {
         navFrom = (entry && entry.from) || null;
         countryList.hidden = true;
 
-        setSelectedMonth(null);
         setRegion(null);
         selectedPin = pin;
         focusPin(pin);
@@ -864,7 +796,6 @@ document.addEventListener("DOMContentLoaded", () => {
         drawMaps(null);
         setMood("day");
         heroTitle.replaceChildren(...homeTitle);
-        drawRing(); // back in day colours
         targetRot = { x: 0, y: globeGroup.rotation.y };
         targetCamDist = homeDist;
         camFront = true;
@@ -885,7 +816,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    // Returns the nearest hit (pin, earth or year ring) under the pointer, or null over empty space
+    // Returns the nearest hit (pin or earth) under the pointer, or null over empty space
     function hitAt(event) {
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -893,28 +824,10 @@ document.addEventListener("DOMContentLoaded", () => {
         raycaster.setFromCamera(mouse, camera);
         // A fanned country's own pin is out of play, and its fanned pins in
         const targets = [dayMap.mesh, ...pinObjects.filter((p) => !(p.userData.fanE > 0.5)), ...fanPins.filter((p) => p.userData.fanOf.userData.fanE > 0.5)];
-        if (yearRing.visible) targets.push(yearRing);
         const hit = raycaster.intersectObjects(targets, true)[0] || null;
         // A pin's needle, cap or pennant counts as the pin
         if (hit && isPin(hit.object.parent)) hit.object = hit.object.parent;
         return hit;
-    }
-
-    function setHoveredMonth(month) {
-        if (month === hoveredMonth) return;
-        hoveredMonth = month;
-        drawRing();
-    }
-
-    function monthSummary(month) {
-        const names = FESTIVALS.filter((f) => f.months.includes(month)).map((f) => f.label);
-        return `${MONTH_NAMES[month]}: ${names.length ? names.join(", ") : "no festivals here yet"}`;
-    }
-
-    function setSelectedMonth(month) {
-        if (month === selectedMonth) return;
-        selectedMonth = month;
-        drawRing();
     }
 
     // Region filter: built on the list's own region labels; dims the festivals (list items and pins) outside the chosen region
@@ -937,13 +850,20 @@ document.addEventListener("DOMContentLoaded", () => {
     regionFilter.querySelectorAll("button").forEach((b, i) => b.style.setProperty("--i", i));
     document.querySelectorAll(".festival-list li").forEach((li, i) => li.style.setProperty("--i", i));
 
+    const festivalUl = document.querySelector(".festival-list ul");
+    const listItems = [...festivalUl.children]; // calendar order
     function setRegion(region) {
+        if (region === selectedRegion) return; // re-appending the list items would drop the focus of a pressed list button
         selectedRegion = region;
         regionToggle.textContent = `Region: ${region || "All"}`;
         regionFilter.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.textContent === (region || "All")));
-        document.querySelectorAll(".festival-list li").forEach((li) => {
+        listItems.forEach((li) => {
             li.classList.toggle("is-dimmed", region !== null && regionOf[li.firstElementChild.dataset.target] !== region);
+            li.style.animation = "none"; // re-appending would replay the staggered page-load entrance
         });
+        // The region's festivals move to the top (in the DOM, so Tab order matches), each group keeping calendar order
+        festivalUl.append(...listItems.filter((li) => !li.classList.contains("is-dimmed")), ...listItems.filter((li) => li.classList.contains("is-dimmed")));
+        festivalUl.parentElement.scrollTop = 0;
     }
 
     regionFilter.addEventListener("click", (e) => {
@@ -973,7 +893,6 @@ document.addEventListener("DOMContentLoaded", () => {
     container.addEventListener("pointerleave", () => {
         isHovering = false;
         hoveredPin = null;
-        setHoveredMonth(null);
         tooltip.hidden = true;
         container.style.cursor = "";
     });
@@ -981,19 +900,12 @@ document.addEventListener("DOMContentLoaded", () => {
     container.addEventListener("pointermove", (event) => {
         const hit = hitAt(event);
         const obj = hit ? hit.object : null;
-        const month = obj === yearRing ? monthAt(hit.point) : null;
         keyboardMode = false;
         facingPin = null;
-        isHovering = obj !== null && obj !== yearRing; // pause over the globe only; it keeps spinning while you use the ring
-        hoveredPin = obj && obj !== dayMap.mesh && obj !== yearRing ? obj : null;
-        setHoveredMonth(month);
-        container.style.cursor = hoveredPin || month !== null ? "pointer" : isHovering ? "" : "default"; // "" is the stylesheet's grab hand
-        let label = null;
-        if (hoveredPin) {
-            label = pinLabel(hoveredPin);
-        } else if (month !== null) {
-            label = monthSummary(month);
-        }
+        isHovering = obj !== null; // pause over the globe only
+        hoveredPin = obj && obj !== dayMap.mesh ? obj : null;
+        container.style.cursor = hoveredPin ? "pointer" : isHovering ? "" : "default"; // "" is the stylesheet's grab hand
+        const label = hoveredPin ? pinLabel(hoveredPin) : null;
         if (label) {
             const heroRect = hero.getBoundingClientRect(); // the tooltip lives in the stage, which the globe may be shifted within
             tooltip.textContent = label;
@@ -1009,21 +921,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // focusVisible: false shows the focus ring for Tab focus only. Blur first: re-focusing a globe that was
     // already Tab-focused would keep its keyboard ring and keep the spin paused.
     // Dragging should start only on the globe or a pin. Elsewhere the press is stopped before it reaches OrbitControls
-    // (on the canvas inside), so clicks on the year ring and empty space still work but don't turn the globe.
+    // (on the canvas inside), so clicks on empty space don't turn the globe.
     container.addEventListener("pointerdown", (event) => {
         container.blur();
         container.focus({ preventScroll: true, focusVisible: false });
         const hit = hitAt(event);
-        if (!hit || hit.object === yearRing) event.stopPropagation();
+        if (!hit) event.stopPropagation();
     }, true);
 
     container.addEventListener("click", (event) => {
         const hit = hitAt(event);
         if (hit && isPin(hit.object)) openPin(hit.object);
-        else if (hit && hit.object === yearRing) {
-            const month = monthAt(hit.point);
-            if (month !== null) setSelectedMonth(month === selectedMonth ? null : month);
-        } else if (!hit) setSelectedMonth(null); // empty space clears the month
     });
 
     regionButtons.forEach((btn) => {
@@ -1049,7 +957,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showCountryList(pin, fromHistory, fromKeyboard) {
         const { festivals, country } = pin.userData;
-        setSelectedMonth(null);
         setRegion(null);
         selectedPin = pin;
         listMode = true;
@@ -1156,10 +1063,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("keydown", (e) => {
         if (e.key !== "Escape" || document.querySelector("dialog[open], :popover-open")) return; // Escape closes an open dialog or the region pills first, not the card
         if (selectedPin) closeFestival();
-        else {
-            setSelectedMonth(null);
-            setRegion(null);
-        }
+        else setRegion(null);
     });
 
     // Keyboard: arrows turn the globe, Enter opens the festival facing the viewer
@@ -1196,30 +1100,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.querySelector(".fl-month").append(now);
     });
 
-    // "Coming up" card (home view, wide screens): festivals on this month, then the next three by month.
-    // Its buttons are copies of the list's, so they share its look and colours.
-    const monthsAway = (f) => Math.min(...f.months.map((m) => (m - THIS_MONTH + 12) % 12));
-    const dated = FESTIVALS.filter((f) => f.months.length).sort((a, b) => monthsAway(a) - monthsAway(b));
-    [["coming-now", dated.filter((f) => monthsAway(f) === 0)], ["coming-next", dated.filter((f) => monthsAway(f) > 0).slice(0, 3)]].forEach(([listId, festivals]) => {
-        const list = document.getElementById(listId);
-        list.closest("section").hidden = festivals.length === 0;
-        festivals.forEach((f) => {
-            const btn = document.querySelector(`.festival-list .region-btn[data-target="${f.id}"]`).cloneNode(true);
-            btn.removeAttribute("aria-pressed");
-            btn.querySelectorAll(".fl-now").forEach((pill) => pill.remove()); // the section heading says it
-            btn.addEventListener("click", () => showFestivalCard(f.id));
-            const li = document.createElement("li");
-            li.append(btn);
-            list.append(li);
-        });
-    });
-
-    // Start the right column level with the "All festivals" heading; the intro above it changes height with the hero heading and width
-    const comingUp = document.querySelector(".coming-up");
-    const listHeading = document.querySelector(".festival-list-heading");
-    new ResizeObserver(() => {
-        comingUp.style.top = `${listHeading.getBoundingClientRect().top - hero.getBoundingClientRect().top}px`;
-    }).observe(document.querySelector(".hero-intro"));
+    document.querySelector(".festival-list-heading").textContent += ` (${document.querySelectorAll(".festival-list li").length})`;
 
     // Zoom: wheel (and trackpad pinch) over the globe, +/-/0 keys, the buttons by the globe; two-finger pinch is OrbitControls' own
     container.addEventListener("wheel", (e) => {
@@ -1576,15 +1457,8 @@ document.addEventListener("DOMContentLoaded", () => {
         stars.visible = nightMix > 0.002;
         ambientLight.intensity = 0.7 + 0.15 * nightMix;
 
-        // Year ring fades in on the home view when there is room for it
         const zoom = zoomNow();
         if (!sharp && !SMALL && zoom > SHARP_ZOOM) upgradeMaps();
-        const ringWanted = !selectedPin && container.clientWidth >= 1100 && zoom < 1.15; // too big to fit once zoomed in
-        ringMix += ((ringWanted ? 1 : 0) - ringMix) * (reduceMotion ? 1 : 0.08);
-        yearRing.material.opacity = ringMix;
-        yearRing.visible = ringMix > 0.01;
-        yearRing.quaternion.copy(camera.quaternion);
-
         // Keyboard: highlight and announce the pin facing the viewer (within about 25 degrees)
         if (keyboardMode && !selectedPin) {
             const toCamera = camera.position.clone().normalize();
@@ -1615,11 +1489,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Selected pin glows and pulses; the others dim to 30% and hold still.
-        // A hovered (or else selected) month on the year ring, or a chosen region, dims the festivals outside it the same way.
+        // A chosen region dims the festivals outside it the same way.
         // A pin with several festivals cycles their colours (2.5 s hold, 1.5 s fade), pausing while hovered,
         // and holds the open festival's colour (or the first one's under reduced motion). While its country's list is shown it keeps cycling.
-        const ringMonth = hoveredMonth ?? selectedMonth;
-        const matches = (f) => (ringMonth === null || f.months.includes(ringMonth)) && (selectedRegion === null || regionOf[f.id] === selectedRegion);
+        const matches = (f) => selectedRegion === null || regionOf[f.id] === selectedRegion;
         motionCam.copy(camera.position).normalize();
         const pinZoom = Math.pow(Math.max(zoom, 1), -0.6);
         if (zoom > FAN_ON) fanOn = true;

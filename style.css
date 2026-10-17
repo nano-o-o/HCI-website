@@ -580,35 +580,6 @@ body,
     pointer-events: none;
 }
 
-/* Right column on the home view, mirroring the festival list; the details panel takes its place when open */
-.coming-up {
-    position: absolute;
-    top: 2rem; /* globe.js lines it up with the "All festivals" heading */
-    right: calc(2rem - 6px);
-    bottom: 1rem;
-    z-index: 10;
-    width: calc(260px + 12px);
-    padding: 0 6px 4px; /* room inside the scroll box for focus rings and the hover nudge */
-    display: none;
-    flex-direction: column;
-    gap: 1.5rem;
-    overflow-y: auto; /* short screens: scrolls rather than cutting off the month buttons */
-    scrollbar-width: thin;
-    scrollbar-color: var(--chip-border) transparent;
-    transition: opacity 0.35s ease, visibility 0.35s;
-}
-
-@media (min-width: 1240px) {
-    .coming-up {
-        display: flex;
-    }
-}
-
-.globe-hero.panel-open .coming-up {
-    opacity: 0;
-    visibility: hidden;
-}
-
 .coming-up-heading {
     font-size: 0.8rem;
     font-weight: 700;
@@ -616,13 +587,6 @@ body,
     text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 1rem;
-}
-
-.coming-up ul {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
 }
 
 /* Pins switch: chip-look pills; the chosen one fills with the text colour */

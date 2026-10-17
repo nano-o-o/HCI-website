@@ -36,7 +36,7 @@
             <nav class="festival-list" aria-labelledby="festival-list-heading">
                 <ul>
                     <li><button class="region-btn" data-target="cape-town-carnival"><span class="fl-name">Cape Town Minstrel Carnival</span><span class="fl-meta">Africa</span><span class="fl-month">January</span></button></li>
-                    <li><button class="region-btn" data-target="lunar-new-year"><span class="fl-name">Lunar New Year</span><span class="fl-meta">East Asia</span><span class="fl-month">Jan–Feb</span></button></li>
+                    <li><button class="region-btn" data-target="lunar-new-year"><span class="fl-name">Chinese New Year</span><span class="fl-meta">East Asia</span><span class="fl-month">Jan–Feb</span></button></li>
                     <li><button class="region-btn" data-target="tet"><span class="fl-name">Tết</span><span class="fl-meta">Southeast Asia</span><span class="fl-month">Jan–Feb</span></button></li>
                     <li><button class="region-btn" data-target="iemanja"><span class="fl-name">Festa de Iemanjá</span><span class="fl-meta">Americas</span><span class="fl-month">February</span></button></li>
                     <li><button class="region-btn" data-target="sapporo-snow-festival"><span class="fl-name">Sapporo Snow Festival</span><span class="fl-meta">East Asia</span><span class="fl-month">February</span></button></li>
@@ -84,18 +84,6 @@
                 <label><input type="radio" name="pin-style" value="firework"> Firework</label>
             </fieldset>
         </div>
-
-        <!-- Right column on the home view: filled from the festival data in globe.js -->
-        <aside class="coming-up" aria-label="Festival calendar">
-            <section>
-                <h2 class="coming-up-heading">Happening now</h2>
-                <ul id="coming-now"></ul>
-            </section>
-            <section>
-                <h2 class="coming-up-heading">Coming up</h2>
-                <ul id="coming-next"></ul>
-            </section>
-        </aside>
 
         <!-- Pin name shown on hover -->
         <div class="globe-tooltip" id="globe-tooltip" hidden></div>
@@ -168,7 +156,7 @@
                 </div>
             </article>
 
-            <!-- East Asia: Lunar New Year -->
+            <!-- East Asia: Chinese New Year -->
             <article class="festival-card" id="card-lunar-new-year" hidden>
                 <div class="card-image-wrap">
                     <img src="images/Lunar-Fireworks-Beijing.jpg" alt="Fireworks bursting over apartment blocks in Beijing on Chinese New Year’s Eve" class="card-img">
@@ -176,12 +164,12 @@
                     <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:Chinese_New_Year_fireworks_in_Xibeiwang,_Haidian,_Beijing_(20210212210709).jpg" target="_blank" rel="noopener noreferrer">Photo: N509FZ, CC BY-SA 4.0</a>
                 </div>
                 <div class="card-content">
-                    <h2 tabindex="-1">Lunar New Year</h2>
+                    <h2 tabindex="-1">Chinese New Year</h2>
                     <p class="meta-date">Observed: January / February</p>
                     <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
                     <p class="greeting"><span class="greeting-native" lang="zh">新年快乐</span> <span class="greeting-gloss"><i lang="zh-Latn">Xīnnián kuàilè</i>, “Happy New Year”</span></p>
                     <p>Marking the beginning of a new calendar cycle based on lunar phases, this festival features glowing red lanterns, energetic dragon dances, and family reunion dinners.</p>
-                    <a href="#lunar-new-year/about" class="card-btn">Read more about Lunar New Year</a>
+                    <a href="#lunar-new-year/about" class="card-btn">Read more about Chinese New Year</a>
                     <section class="festival-about">
                         <h3 tabindex="-1">What it celebrates</h3>
                         <p>The first day of the year in the Chinese lunisolar calendar, also called the Spring Festival (<span lang="zh">春节</span>, <i lang="zh-Latn">Chūnjié</i>). It is a time to see out the old year, welcome luck for the new one, honour ancestors and, above all, bring the family back together. Each year is linked to one of the twelve animals of the zodiac.</p>
@@ -201,7 +189,7 @@
                                 <img src="images/Lunar-NianGao.jpg" alt="Three small foil trays of nian gao, a sticky cake, topped with almonds and a red date." class="card-img" loading="lazy">
                                 <a class="photo-credit" href="https://commons.wikimedia.org/wiki/File:A_Chinese_Nian_Gao_from_Yuen_Long.jpg" target="_blank" rel="noopener noreferrer">Photo: Peachyeung316, CC BY-SA 4.0</a>
                             </div>
-                            <figcaption>Nian gao, a sticky rice cake eaten at Lunar New Year.</figcaption>
+                            <figcaption>Nian gao, a sticky rice cake eaten at Chinese New Year.</figcaption>
                         </figure>
                         <h3>When</h3>
                         <p>On the second new moon after the winter solstice, so it falls between 21 January and 20 February.</p>
@@ -213,7 +201,7 @@
                         <h3>Where</h3>
                         <p>Across China, Hong Kong, Macau and Taiwan, and in Singapore, Malaysia and Indonesia. Vietnam celebrates Tết and Korea celebrates Seollal on or around the same day, and Chinese communities around the world mark it with parades and festivals.</p>
                         <h3>Sources</h3>
-                        <p><a href="https://en.wikipedia.org/wiki/Lunar_New_Year" target="_blank" rel="noopener noreferrer">Lunar New Year on Wikipedia</a></p>
+                        <p><a href="https://en.wikipedia.org/wiki/Chinese_New_Year" target="_blank" rel="noopener noreferrer">Chinese New Year on Wikipedia</a></p>
                     </section>
                 </div>
             </article>
@@ -1325,11 +1313,11 @@
                     <p class="meta-date">Observed: The 15th day of the first lunar month (February or early March)</p>
                     <p class="mood-tag"><svg class="mood-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Celebrated at night</p>
                     <p class="greeting"><span class="greeting-native" lang="zh">元宵节快乐</span> <span class="greeting-gloss"><i lang="zh-Latn">Yuánxiāo jié kuàilè</i>, “Happy Lantern Festival”</span></p>
-                    <p>On the year’s first full moon, fifteen days after Lunar New Year, the New Year season ends in light. Streets and parks glow with lantern displays, people try to solve riddles hung from the lanterns, and families share sweet rice balls, round like the moon, as a sign of being together.</p>
+                    <p>On the year’s first full moon, fifteen days after Chinese New Year, the New Year season ends in light. Streets and parks glow with lantern displays, people try to solve riddles hung from the lanterns, and families share sweet rice balls, round like the moon, as a sign of being together.</p>
                     <a href="#lantern-festival/about" class="card-btn">Read more about Lantern Festival</a>
                     <section class="festival-about">
                         <h3 tabindex="-1">What it celebrates</h3>
-                        <p>The Lantern Festival (<span lang="zh">元宵节</span>, <i lang="zh-Latn">Yuánxiāo jié</i>, “festival of the first night”) falls on the 15th day of the first month of the Chinese lunisolar calendar, the first full moon of the year, and closes the Lunar New Year season. Where New Year’s Eve is spent with the family at home, the Lantern Festival is about going out. In imperial China it was one of the few nights when the curfew was lifted and everyone, young women included, could walk the streets to see the lanterns, which is why it is sometimes called a Chinese Valentine’s Day.</p>
+                        <p>The Lantern Festival (<span lang="zh">元宵节</span>, <i lang="zh-Latn">Yuánxiāo jié</i>, “festival of the first night”) falls on the 15th day of the first month of the Chinese lunisolar calendar, the first full moon of the year, and closes the Chinese New Year season. Where New Year’s Eve is spent with the family at home, the Lantern Festival is about going out. In imperial China it was one of the few nights when the curfew was lifted and everyone, young women included, could walk the streets to see the lanterns, which is why it is sometimes called a Chinese Valentine’s Day.</p>
                         <p>Its beginnings are told in several ways: a Han dynasty emperor ordering lamps lit in honour of the Buddha, the worship of the Daoist Heavenly Official (<i lang="zh-Latn">Tiānguān</i>), whose birthday falls on this day, and folk tales of lanterns that fooled the gods into sparing a village. Lantern displays were already lavish under the Tang dynasty, when the festival lasted three nights, and riddles written on lanterns appear under the Song.</p>
                         <h3>How it’s celebrated</h3>
                         <p>Lanterns hang in streets, temples and parks, from simple red paper globes to huge displays of dragons, zodiac animals, flowers and scenes from legend, once made of silk and paper and now often lit by LEDs. Lantern fairs such as the Qinhuai Lantern Fair around Nanjing’s Confucius Temple and the lantern show in Zigong, Sichuan, draw crowds of visitors, and children carry small lanterns of their own. Riddles are written on slips hung from the lanterns (<i lang="zh-Latn">cāi dēngmí</i>, “guessing lantern riddles”), and a right answer may win a small prize. Lion and dragon dances, stilt walkers and fireworks fill the evening. In Taiwan, people in Pingxi release sky lanterns written with wishes, and in Malaysia and Singapore, where the night is also called Chap Goh Mei, some young women write their names on mandarin oranges and toss them into the water in the hope of finding a partner.</p>
@@ -1350,14 +1338,14 @@
                             <figcaption>Tangyuan, sweet rice balls eaten at the Lantern Festival.</figcaption>
                         </figure>
                         <h3>When</h3>
-                        <p>On the 15th day of the first lunar month, the first full moon after Lunar New Year, so it falls between early February and early March:</p>
+                        <p>On the 15th day of the first lunar month, the first full moon after Chinese New Year, so it falls between early February and early March:</p>
                         <ul class="about-dates">
                             <li>2027: 20 February</li>
                             <li>2028: 9 February</li>
                             <li>2029: 27 February</li>
                         </ul>
                         <h3>Where</h3>
-                        <p>Across China, Hong Kong, Macau and Taiwan, and in Chinese communities in Singapore, Malaysia, Indonesia and around the world. Korea marks the same full moon as Daeboreum. This atlas puts it on China’s pin with Lunar New Year, since it closes that season.</p>
+                        <p>Across China, Hong Kong, Macau and Taiwan, and in Chinese communities in Singapore, Malaysia, Indonesia and around the world. Korea marks the same full moon as Daeboreum. This atlas puts it on China’s pin with Chinese New Year, since it closes that season.</p>
                         <h3>Sources</h3>
                         <p><a href="https://en.wikipedia.org/wiki/Lantern_Festival" target="_blank" rel="noopener noreferrer">Lantern Festival on Wikipedia</a></p>
                     </section>

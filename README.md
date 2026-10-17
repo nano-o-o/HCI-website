@@ -4,21 +4,20 @@ An interactive 3D globe for discovering festivals around the world, made as a cl
 
 **Live site:** https://nano-o-o.github.io/HCI-website/
 
-Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Lunar New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated and has photos of its food and, for most festivals, of people celebrating. Clicking a card's or reading view's photo shows the whole picture.
+Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Chinese New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated and has photos of its food and, for most festivals, of people celebrating. Clicking a card's or reading view's photo shows the whole picture.
 
 ## Festivals
 
-Cape Town Minstrel Carnival · Lunar New Year · Tết · Festa de Iemanjá · Sapporo Snow Festival · Venice Carnival · Mardi Gras · Rio Carnival · Viña del Mar Festival · Lantern Festival · Adelaide Fringe · Las Fallas · Holi · Nowruz · Coachella · Songkran · Anzac Day · Fez Festival of World Sacred Music · Vivid Sydney · Gnaoua World Music Festival · Bastille Day · Guelaguetza · Awa Odori · La Tomatina · Oktoberfest · Thimphu Tshechu · Durga Puja · Diwali · Tihar · Día de Muertos · Loy Krathong · Bon Om Touk · Melbourne Cup · Dubai Shopping Festival · Eid al-Fitr
+Cape Town Minstrel Carnival · Chinese New Year · Tết · Festa de Iemanjá · Sapporo Snow Festival · Venice Carnival · Mardi Gras · Rio Carnival · Viña del Mar Festival · Lantern Festival · Adelaide Fringe · Las Fallas · Holi · Nowruz · Coachella · Songkran · Anzac Day · Fez Festival of World Sacred Music · Vivid Sydney · Gnaoua World Music Festival · Bastille Day · Guelaguetza · Awa Odori · La Tomatina · Oktoberfest · Thimphu Tshechu · Durga Puja · Diwali · Tihar · Día de Muertos · Loy Krathong · Bon Om Touk · Melbourne Cup · Dubai Shopping Festival · Eid al-Fitr
 
 ## Features
 
 - A 3D globe with one pin per country (a country with several festivals shows a count badge, cycles through their colours and opens a list of them in the side panel); you can choose pushpin, lantern, flag, map marker, candle or firework pins
 - Zoom with the mouse wheel, a pinch or the zoom buttons; zoomed in, countries get name labels and a country's festivals spread out into separate pins
-- A year ring around the globe showing when each festival falls (desktop only)
 - A region filter that dims the festivals and pins outside the chosen region (desktop and tablet)
-- "Happening now" and "Coming up" lists based on today's date
+- An "On now" badge on festivals happening this month
 - Day and night themes that follow the festival
-- A short burst when a festival opens: sparks (Diwali, Tihar, Lunar New Year, Tết, Bastille Day, Las Fallas, Dubai Shopping Festival, Vivid Sydney), coloured clouds (Holi, La Tomatina, Songkran), flower petals (Día de Muertos, Festa de Iemanjá, Durga Puja, Nowruz, Melbourne Cup), paper confetti (Rio Carnival, Mardi Gras, Venice Carnival, Cape Town Minstrel Carnival, Viña del Mar, Coachella, Oktoberfest, Guelaguetza, Adelaide Fringe, Gnaoua, Thimphu Tshechu), rising paper lanterns (Lantern Festival, Awa Odori), drifting candle lights (Loy Krathong, Fez Festival of World Sacred Music), snow (Sapporo Snow Festival), river spray (Bon Om Touk), a few falling poppy petals (Anzac Day) or gold stars and crescents (Eid al-Fitr)
+- A short burst when a festival opens: sparks (Diwali, Tihar, Chinese New Year, Tết, Bastille Day, Las Fallas, Dubai Shopping Festival, Vivid Sydney), coloured clouds (Holi, La Tomatina, Songkran), flower petals (Día de Muertos, Festa de Iemanjá, Durga Puja, Nowruz, Melbourne Cup), paper confetti (Rio Carnival, Mardi Gras, Venice Carnival, Cape Town Minstrel Carnival, Viña del Mar, Coachella, Oktoberfest, Guelaguetza, Adelaide Fringe, Gnaoua, Thimphu Tshechu), rising paper lanterns (Lantern Festival, Awa Odori), drifting candle lights (Loy Krathong, Fez Festival of World Sacred Music), snow (Sapporo Snow Festival), river spray (Bon Om Touk), a few falling poppy petals (Anzac Day) or gold stars and crescents (Eid al-Fitr)
 - Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
 - Keyboard support: the arrow keys turn the globe, Enter opens the festival facing you, and + and - zoom
 - Layouts for desktop, tablet and phone
@@ -40,7 +39,7 @@ and open http://localhost:8765/HCI.html.
 | `HCI.html` | Page structure, festival cards and reading views |
 | `index.html` | Redirects to `HCI.html`, so the short site address works |
 | `style.css` | Styles, day and night themes, festival colours |
-| `globe.js` | Globe, pins, year ring, festival data and navigation |
+| `globe.js` | Globe, pins, festival data and navigation |
 | `DESIGN.md` | Design system: colours, type and layout rules |
 | `images/` | Festival photos |
 | `vendor/` | Bundled libraries, map data and fonts |
