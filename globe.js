@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Shapes crossing the ±180° line (Russia, Antarctica) are unwrapped into one
     // continuous outline, then drawn three times so the part off the edge wraps around.
-    function traceRing(ctx, ring, toX, toY) {
+    function unwrapRing(ring) {
         const pts = [];
         let offset = 0;
         ring.forEach(([lon, lat]) => {
@@ -170,27 +170,31 @@ document.addEventListener("DOMContentLoaded", () => {
             const pole = first[1] < 0 ? -90 : 90;
             pts.push([last[0], pole], [first[0], pole]);
         }
+        return pts;
+    }
+
+    function traceRing(ctx, ring, toX, toY) {
+        const pts = unwrapRing(ring);
         [-360, 0, 360].forEach((shift) => {
             pts.forEach(([lon, lat], i) => (i ? ctx.lineTo(toX(lon + shift), toY(lat)) : ctx.moveTo(toX(lon + shift), toY(lat))));
             ctx.closePath();
         });
     }
 
-    function tracePath(map, features) {
-        const { ctx, canvas } = map;
-        const toX = (lon) => ((lon + 180) / 360) * canvas.width;
-        const toY = (lat) => ((90 - lat) / 180) * canvas.height;
+    const ringsOf = (f) => (!f || !f.geometry ? [] : (f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates).flat());
+
+    // k: pixels per degree; west and north: the canvas's top-left corner
+    function tracePath(ctx, features, k, west = -180, north = 90) {
+        const toX = (lon) => (lon - west) * k;
+        const toY = (lat) => (north - lat) * k;
         ctx.beginPath();
-        features.forEach((f) => {
-            if (!f || !f.geometry) return;
-            const polygons = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-            polygons.forEach((rings) => rings.forEach((ring) => traceRing(ctx, ring, toX, toY)));
-        });
+        features.forEach((f) => ringsOf(f).forEach((ring) => traceRing(ctx, ring, toX, toY)));
     }
 
-    // Draws ocean + land, and lights up the selected festival's countries in its pin colour
-    function drawMap(map, festival) {
+    // Draws ocean + land; only at the start and on upgradeMaps, since festival highlights have their own patches (below)
+    function drawMap(map) {
         const { ctx, canvas } = map;
+        const k = canvas.width / 360;
         const pal = palettes[map.mood];
         const px = canvas.width / 2048; // line widths below are for the 2048 map
         ctx.globalAlpha = 1;
@@ -207,48 +211,88 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.stroke();
         ctx.globalAlpha = 1;
 
-        tracePath(map, land);
+        tracePath(ctx, land, k);
         ctx.fillStyle = pal.land;
         ctx.fill("evenodd");
 
         // Thin country borders, then the coastline on top
-        tracePath(map, allCountries);
+        tracePath(ctx, allCountries, k);
         ctx.globalAlpha = 0.45;
         ctx.lineWidth = px;
         ctx.stroke();
         ctx.globalAlpha = 1;
-        tracePath(map, land);
+        tracePath(ctx, land, k);
         ctx.lineWidth = 2 * px;
         ctx.stroke();
+        map.texture.needsUpdate = true;
+    }
+    drawMap(dayMap);
+    drawMap(nightMap);
 
-        if (festival) {
-            const night = map.mood === "night";
-            const colour = token(night ? `--glow-${festival.color}` : `--festival-${festival.color}`);
-            if (festival.related) {
-                tracePath(map, festival.related.map((n) => countryByName[n]));
-                ctx.globalAlpha = 0.35;
-                ctx.fillStyle = colour;
-                ctx.fill("evenodd");
-            }
-            tracePath(map, festival.countries.map((n) => countryByName[n]));
-            ctx.globalAlpha = 0.9;
+    // The selected festival's countries, lit in its pin colour, sit on a patch of sphere just above each map that covers
+    // only their bounding box, so picking a festival redraws and re-uploads that patch instead of both full maps.
+    // Both patches are above the night map, so each fades itself with nightMix (in animate).
+    function makeLit(mood, radius) {
+        const canvas = document.createElement("canvas");
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshPhongMaterial({ map: texture, shininess: 8, transparent: true }));
+        mesh.visible = false;
+        globeGroup.add(mesh);
+        return { mood, radius, canvas, ctx: canvas.getContext("2d"), texture, mesh };
+    }
+    const dayLit = makeLit("day", globeRadius + 0.1);
+    const nightLit = makeLit("night", globeRadius + 0.12);
+
+    function drawLit(lit, festival, b) {
+        const { canvas, ctx } = lit;
+        const k = dayMap.canvas.width / 360;
+        canvas.width = b.w; // also clears it
+        canvas.height = b.h;
+        const colour = token(lit.mood === "night" ? `--glow-${festival.color}` : `--festival-${festival.color}`);
+        const trace = (names) => tracePath(ctx, names.map((n) => countryByName[n]), k, b.west, b.north);
+        if (festival.related) {
+            trace(festival.related);
+            ctx.globalAlpha = 0.35;
             ctx.fillStyle = colour;
             ctx.fill("evenodd");
-            ctx.globalAlpha = 1;
-            ctx.strokeStyle = map.mood === "night" ? "#ffffff" : token("--ink");
-            ctx.lineWidth = 3 * px;
-            ctx.stroke();
         }
-        map.texture.needsUpdate = true;
+        trace(festival.countries);
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = colour;
+        ctx.fill("evenodd");
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = lit.mood === "night" ? "#ffffff" : token("--ink");
+        ctx.lineWidth = 3 * (dayMap.canvas.width / 2048);
+        ctx.stroke();
+        lit.texture.dispose(); // its size changes with each festival
+        lit.texture.needsUpdate = true;
+        // 2° segments keep the patch's flat facets above the night map
+        lit.mesh.geometry.dispose();
+        lit.mesh.geometry = new THREE.SphereGeometry(lit.radius, Math.ceil((b.east - b.west) / 2), Math.ceil((b.north - b.south) / 2),
+            (b.west + 180) * DEG, (b.east - b.west) * DEG, (90 - b.north) * DEG, (b.north - b.south) * DEG);
     }
 
     let drawn = null;
+    // Lights up a festival's countries; null clears them (animate hides the patches)
     function drawMaps(festival) {
         drawn = festival;
-        drawMap(dayMap, festival);
-        drawMap(nightMap, festival);
+        if (!festival) return;
+        // Bounding box in the same unwrapped longitudes the outlines are drawn with, padded 1° for the outline's width
+        // shortcut: a country with land on both sides of ±180° (USA, Russia, Fiji) gets a full-width patch; fine at this size
+        let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
+        [...festival.countries, ...(festival.related || [])].forEach((n) => ringsOf(countryByName[n]).forEach((ring) => unwrapRing(ring).forEach(([lon, lat]) => {
+            west = Math.min(west, lon); east = Math.max(east, lon); south = Math.min(south, lat); north = Math.max(north, lat);
+        })));
+        const k = dayMap.canvas.width / 360;
+        west -= 1;
+        north = Math.min(90, north + 1);
+        const w = Math.ceil((east + 1 - west) * k);
+        const h = Math.ceil((north - Math.max(-90, south - 1)) * k);
+        const b = { west, north, east: west + w / k, south: north - h / k, w, h }; // whole pixels, so the patch maps 1:1 onto the maps' grid
+        drawLit(dayLit, festival, b);
+        drawLit(nightLit, festival, b);
     }
-    drawMaps(null);
 
     // Drawn past SHARP_ZOOM on a desktop: double the map's resolution (about 78 MB more of canvas and texture memory), once
     let sharp = SHARP_HOME;
@@ -258,6 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
             m.canvas.width = 4096;
             m.canvas.height = 2048;
             m.texture.dispose();
+            drawMap(m);
         });
         drawMaps(drawn);
     }
@@ -781,7 +826,12 @@ document.addEventListener("DOMContentLoaded", () => {
         regionFilter.style.right = `${document.documentElement.clientWidth - r.right}px`;
     });
 
+    // Pointer moves can fire several times a frame, so raycast only the latest one, once per frame
+    let moveEvent = null;
+    let moveFrame = 0;
     container.addEventListener("pointerleave", () => {
+        cancelAnimationFrame(moveFrame);
+        moveFrame = 0;
         isHovering = false;
         hoveredPin = null;
         tooltip.hidden = true;
@@ -789,6 +839,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     container.addEventListener("pointermove", (event) => {
+        moveEvent = event;
+        if (!moveFrame) moveFrame = requestAnimationFrame(onPointerMove);
+    });
+
+    function onPointerMove() {
+        moveFrame = 0;
+        const event = moveEvent;
         const hit = hitAt(event);
         const obj = hit ? hit.object : null;
         keyboardMode = false;
@@ -806,7 +863,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             tooltip.hidden = true;
         }
-    });
+    }
 
     // OrbitControls cancels the browser's click-to-focus (and the canvas can't take focus), so focus the globe here.
     // focusVisible: false shows the focus ring for Tab focus only. Blur first: re-focusing a globe that was
@@ -980,9 +1037,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) o = 0;
                 else {
                     placed.push(box);
-                    lab.el.style.transform = `translate(${x - lab.w / 2}px, ${y}px)`;
+                    const t = `translate(${x - lab.w / 2}px, ${y}px)`;
+                    if (t !== lab.t) lab.el.style.transform = lab.t = t; // style writes cost even when unchanged, so skip still labels
                 }
             }
+            if (o === lab.o) return;
+            lab.o = o;
             lab.el.style.opacity = o;
             lab.el.style.pointerEvents = o > 0.5 ? "auto" : "none";
         });
@@ -1218,6 +1278,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const whiteColor = new THREE.Color(0xffffff);
     const motionPos = new THREE.Vector3();
     const motionCam = new THREE.Vector3();
+    const camGoal = new THREE.Vector3();
 
     function animate() {
         requestAnimationFrame(animate);
@@ -1240,7 +1301,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Zoom: ease the camera toward the front (+z) at the target distance
         if (targetCamDist !== null) {
-            const goal = camFront ? new THREE.Vector3(0, 0, targetCamDist) : camera.position.clone().setLength(targetCamDist);
+            const goal = camFront ? camGoal.set(0, 0, targetCamDist) : camGoal.copy(camera.position).setLength(targetCamDist);
             const len = camera.position.length() + (targetCamDist - camera.position.length()) * EASE;
             camera.position.lerp(goal, EASE).setLength(len);
             if (camera.position.distanceTo(goal) < 0.2) {
@@ -1253,6 +1314,10 @@ document.addEventListener("DOMContentLoaded", () => {
         nightMix += (targetMix - nightMix) * (reduceMotion ? 1 : 0.05);
         nightMap.mesh.material.opacity = nightMix;
         nightMap.mesh.visible = nightMix > 0.002;
+        dayLit.mesh.material.opacity = 1 - nightMix;
+        dayLit.mesh.visible = drawn !== null && nightMix < 0.998;
+        nightLit.mesh.material.opacity = nightMix;
+        nightLit.mesh.visible = drawn !== null && nightMix > 0.002;
         halo.material.uniforms.color.value.copy(palettes.day.halo).lerp(palettes.night.halo, nightMix);
         halo.material.uniforms.strength.value = 0.9 - 0.3 * nightMix;
         stars.material.opacity = 0.8 * nightMix;
@@ -1265,13 +1330,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const zoom = zoomNow();
         if (!sharp && !SMALL && zoom * view.k > SHARP_ZOOM) upgradeMaps();
+        motionCam.copy(camera.position).normalize();
         // Keyboard: highlight and announce the pin facing the viewer (within about 25 degrees)
         if (keyboardMode && !selectedPin) {
-            const toCamera = camera.position.clone().normalize();
             let best = null;
             let bestDot = 0.9;
             pinObjects.forEach((pin) => {
-                const d = pin.getWorldPosition(new THREE.Vector3()).normalize().dot(toCamera);
+                const d = pin.getWorldPosition(motionPos).normalize().dot(motionCam);
                 if (d > bestDot) {
                     bestDot = d;
                     best = pin;
@@ -1285,18 +1350,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 tooltip.hidden = !best;
             }
             if (facingPin) {
-                const v = facingPin.getWorldPosition(new THREE.Vector3()).project(camera);
-                const box = container.getBoundingClientRect(); // includes the globe's CSS shift
-                const stage = hero.getBoundingClientRect();
-                tooltip.style.left = `${box.left - stage.left + ((v.x + 1) / 2) * box.width}px`;
-                tooltip.style.top = `${box.top - stage.top + ((1 - v.y) / 2) * box.height}px`;
+                const v = facingPin.getWorldPosition(motionPos).project(camera);
+                // The globe fills the stage here: its only CSS shift is the phone's, and that needs an open card
+                tooltip.style.left = `${((v.x + 1) / 2) * W}px`;
+                tooltip.style.top = `${((1 - v.y) / 2) * H}px`;
             }
         }
 
         // Selected pin glows and pulses; the others dim to 30% and hold still.
         // A chosen region dims the festivals outside it the same way.
         const matches = (f) => selectedRegion === null || regionOf[f.id] === selectedRegion;
-        motionCam.copy(camera.position).normalize();
         const pinZoom = Math.pow(Math.max(zoom, 1), -0.6);
         pinObjects.forEach((pin, i) => {
             const { ring, dayColor, nightColor, festival } = pin.userData;
