@@ -1331,6 +1331,19 @@ document.addEventListener("DOMContentLoaded", () => {
         diwali: { kind: "spark", cols: ["#fde047", "#facc15", "#fb923c", "#fff7d6"] },
         holi: { kind: "puff", cols: ["#db2777", "#f472b6", "#facc15", "#22c55e", "#3b82f6", "#a855f7"] }, // gulal shades
         "dia-de-muertos": { kind: "petal", cols: ["#f59e0b", "#ea580c", "#fdba74", "#fbbf24"] }, // marigolds
+        "lunar-new-year": { kind: "spark", cols: ["#dc2626", "#f87171", "#facc15", "#fde68a"] }, // firecracker red and gold
+        tet: { kind: "spark", cols: ["#dc2626", "#f87171", "#facc15", "#fde68a"] },
+        tihar: { kind: "spark", cols: ["#fde047", "#facc15", "#fb923c", "#fff7d6"] }, // diyo lamps, as Diwali
+        "bastille-day": { kind: "spark", cols: ["#2563eb", "#60a5fa", "#ef4444", "#f8fafc"] }, // tricolour fireworks
+        "dubai-shopping-festival": { kind: "spark", cols: ["#facc15", "#f472b6", "#a78bfa", "#fff7d6"] }, // fireworks
+        "vivid-sydney": { kind: "spark", cols: ["#22d3ee", "#e879f9", "#a78bfa", "#67e8f9"] }, // light installations
+        "la-tomatina": { kind: "puff", cols: ["#dc2626", "#ef4444", "#b91c1c", "#f87171"] }, // tomato pulp
+        songkran: { kind: "puff", cols: ["#0ea5e9", "#38bdf8", "#7dd3fc", "#2563eb"] }, // splashed water
+        "las-fallas": { kind: "spark", cols: ["#f97316", "#ea580c", "#facc15", "#fde68a"] }, // fireworks and embers (night puffs add up to white)
+        iemanja: { kind: "petal", cols: ["#ffffff", "#f1f5f9", "#e0f2fe", "#bae6fd"] }, // white flowers for the sea
+        "durga-puja": { kind: "petal", cols: ["#dc2626", "#b91c1c", "#f59e0b", "#ea580c"] }, // hibiscus and marigold
+        nowruz: { kind: "petal", cols: ["#fbcfe8", "#f9a8d4", "#fdf2f8", "#bbf7d0"] }, // spring blossom
+        "melbourne-cup": { kind: "petal", cols: ["#e11d48", "#fb7185", "#fda4af", "#fef3c7"] }, // Flemington roses
     };
     const fxCanvas = document.createElement("canvas");
     fxCanvas.className = "globe-fx";

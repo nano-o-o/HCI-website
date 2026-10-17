@@ -18,7 +18,7 @@ Cape Town Minstrel Carnival · Lunar New Year · Tết · Festa de Iemanjá · S
 - A region filter that dims the festivals and pins outside the chosen region (desktop and tablet)
 - "Happening now" and "Coming up" lists based on today's date
 - Day and night themes that follow the festival
-- A short burst when some festivals open: golden sparks for Diwali, coloured powder for Holi, marigold petals for Día de Muertos
+- A short burst when some festivals open: sparks (Diwali, Tihar, Lunar New Year, Tết, Bastille Day, Las Fallas, Dubai Shopping Festival, Vivid Sydney), coloured clouds (Holi, La Tomatina, Songkran) or flower petals (Día de Muertos, Festa de Iemanjá, Durga Puja, Nowruz, Melbourne Cup)
 - Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
 - Keyboard support: the arrow keys turn the globe, Enter opens the festival facing you, and + and - zoom
 - Layouts for desktop, tablet and phone
