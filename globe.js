@@ -13,48 +13,48 @@ const THIS_MONTH = NOW.getMonth();
 const EID_MONTHS = NOW.getFullYear() in EID_MONTH ? [EID_MONTH[NOW.getFullYear()]] : [];
 
 // To add a festival: add an entry here, a card and list item in HCI.html, and colour tokens and a motif in style.css.
-// Each festival has its own pin at `lat`/`lon`, a real city or site inside the border of its first `countries` entry.
+// `lat`/`lon` is the real city or site; the pin sits at `pinLat`/`pinLon`, which a new festival needs inside its first country's border, about 170 km in and 450 km from other pins.
 // `color` names the token pair (--festival-<color> by day, --glow-<color> at night); `mood` is the theme the festival opens in;
 // `months` (0 = January) drive the "On now" label.
 const FESTIVALS = [
-    { id: "diwali", label: "Diwali", lat: 26.7922, lon: 82.1998, color: "diwali", mood: "night", months: [9, 10], countries: ["India"] },
-    { id: "lunar-new-year", label: "Chinese New Year", lat: 39.9042, lon: 116.4074, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
-    { id: "lantern-festival", label: "Lantern Festival", lat: 32.0206, lon: 118.7889, color: "lantern", mood: "night", months: [1, 2], countries: ["China"] },
-    { id: "eid", label: "Eid al-Fitr", lat: 23.8859, lon: 45.0792, color: "eid", mood: "day", months: EID_MONTHS, countries: ["Saudi Arabia"], related: MUSLIM_MAJORITY },
-    { id: "rio-carnival", label: "Rio Carnival", lat: -22.9118, lon: -43.1966, color: "rio", mood: "night", months: [1, 2], countries: ["Brazil"] },
-    { id: "oktoberfest", label: "Oktoberfest", lat: 48.1351, lon: 11.5820, color: "oktoberfest", mood: "day", months: [8, 9], countries: ["Germany"] },
-    { id: "holi", label: "Holi", lat: 27.4924, lon: 77.6737, color: "holi", mood: "day", months: [2], countries: ["India", "Nepal"] },
-    { id: "songkran", label: "Songkran", lat: 13.7563, lon: 100.5018, color: "songkran", mood: "day", months: [3], countries: ["Thailand"], related: ["Laos", "Myanmar", "Cambodia"] },
-    { id: "loy-krathong", label: "Loy Krathong", lat: 17.0193, lon: 99.7036, color: "loy", mood: "night", months: [10], countries: ["Thailand"] },
-    { id: "dia-de-muertos", label: "Día de Muertos", lat: 19.5164, lon: -101.6094, color: "muertos", mood: "night", months: [10], countries: ["Mexico"] },
-    { id: "las-fallas", label: "Las Fallas", lat: 39.4699, lon: -0.3763, color: "fallas", mood: "night", months: [2], countries: ["Spain"] },
-    { id: "la-tomatina", label: "La Tomatina", lat: 39.4189, lon: -0.7906, color: "tomatina", mood: "day", months: [7], countries: ["Spain"] },
-    { id: "venice-carnival", label: "Venice Carnival", lat: 45.4408, lon: 12.3155, color: "venice", mood: "day", months: [1, 2], countries: ["Italy"] },
-    { id: "bastille-day", label: "Bastille Day", lat: 48.8566, lon: 2.3522, color: "bastille", mood: "day", months: [6], countries: ["France"] },
-    { id: "mardi-gras", label: "Mardi Gras", lat: 29.9584, lon: -90.0644, color: "mardigras", mood: "day", months: [1, 2], countries: ["United States of America"] },
-    { id: "coachella", label: "Coachella", lat: 33.6803, lon: -116.2379, color: "coachella", mood: "night", months: [3], countries: ["United States of America"] },
-    { id: "vina-del-mar", label: "Viña del Mar Festival", lat: -33.0245, lon: -71.5518, color: "vina", mood: "night", months: [1], countries: ["Chile"] },
-    { id: "guelaguetza", label: "Guelaguetza", lat: 17.0732, lon: -96.7266, color: "guelaguetza", mood: "day", months: [6], countries: ["Mexico"] },
-    { id: "iemanja", label: "Festa de Iemanjá", lat: -13.0108, lon: -38.4917, color: "iemanja", mood: "day", months: [1], countries: ["Brazil"], related: ["Uruguay"] },
+    { id: "diwali", label: "Diwali", lat: 26.7922, lon: 82.1998, pinLat: 25.2344, pinLon: 80.6018, color: "diwali", mood: "night", months: [9, 10], countries: ["India"] },
+    { id: "lunar-new-year", label: "Chinese New Year", lat: 39.9042, lon: 116.4074, pinLat: 39.9619, pinLon: 116.318, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
+    { id: "lantern-festival", label: "Lantern Festival", lat: 32.0206, lon: 118.7889, pinLat: 32.0206, pinLon: 118.789, color: "lantern", mood: "night", months: [1, 2], countries: ["China"] },
+    { id: "eid", label: "Eid al-Fitr", lat: 23.8859, lon: 45.0792, pinLat: 23.8859, pinLon: 45.0792, color: "eid", mood: "day", months: EID_MONTHS, countries: ["Saudi Arabia"], related: MUSLIM_MAJORITY },
+    { id: "rio-carnival", label: "Rio Carnival", lat: -22.9118, lon: -43.1966, pinLat: -21.5415, pinLon: -43.5876, color: "rio", mood: "night", months: [1, 2], countries: ["Brazil"] },
+    { id: "oktoberfest", label: "Oktoberfest", lat: 48.1351, lon: 11.5820, pinLat: 49.2889, pinLon: 10.3142, color: "oktoberfest", mood: "day", months: [8, 9], countries: ["Germany"] },
+    { id: "holi", label: "Holi", lat: 27.4924, lon: 77.6737, pinLat: 27.7595, pinLon: 77.0928, color: "holi", mood: "day", months: [2], countries: ["India", "Nepal"] },
+    { id: "songkran", label: "Songkran", lat: 13.7563, lon: 100.5018, pinLat: 14.8598, pinLon: 101.358, color: "songkran", mood: "day", months: [3], countries: ["Thailand"], related: ["Laos", "Myanmar", "Cambodia"] },
+    { id: "loy-krathong", label: "Loy Krathong", lat: 17.0193, lon: 99.7036, pinLat: 18.323, pinLon: 99.344, color: "loy", mood: "night", months: [10], countries: ["Thailand"] },
+    { id: "dia-de-muertos", label: "Día de Muertos", lat: 19.5164, lon: -101.6094, pinLat: 19.5164, pinLon: -101.609, color: "muertos", mood: "night", months: [10], countries: ["Mexico"] },
+    { id: "las-fallas", label: "Las Fallas", lat: 39.4699, lon: -0.3763, pinLat: 41.3998, pinLon: -1.0499, color: "fallas", mood: "night", months: [2], countries: ["Spain"] },
+    { id: "la-tomatina", label: "La Tomatina", lat: 39.4189, lon: -0.7906, pinLat: 38.1581, pinLon: -3.9659, color: "tomatina", mood: "day", months: [7], countries: ["Spain"] },
+    { id: "venice-carnival", label: "Venice Carnival", lat: 45.4408, lon: 12.3155, pinLat: 45.1225, pinLon: 10.5963, color: "venice", mood: "day", months: [1, 2], countries: ["Italy"] },
+    { id: "bastille-day", label: "Bastille Day", lat: 48.8566, lon: 2.3522, pinLat: 48.7998, pinLon: 2.3975, color: "bastille", mood: "day", months: [6], countries: ["France"] },
+    { id: "mardi-gras", label: "Mardi Gras", lat: 29.9584, lon: -90.0644, pinLat: 31.0715, pinLon: -90.9834, color: "mardigras", mood: "day", months: [1, 2], countries: ["United States of America"] },
+    { id: "coachella", label: "Coachella", lat: 33.6803, lon: -116.2379, pinLat: 34.1179, pinLon: -116.024, color: "coachella", mood: "night", months: [3], countries: ["United States of America"] },
+    { id: "vina-del-mar", label: "Viña del Mar Festival", lat: -33.0245, lon: -71.5518, pinLat: -33.9659, pinLon: -70.9075, color: "vina", mood: "night", months: [1], countries: ["Chile"] },
+    { id: "guelaguetza", label: "Guelaguetza", lat: 17.0732, lon: -96.7266, pinLat: 17.2936, pinLon: -96.6363, color: "guelaguetza", mood: "day", months: [6], countries: ["Mexico"] },
+    { id: "iemanja", label: "Festa de Iemanjá", lat: -13.0108, lon: -38.4917, pinLat: -11.6684, pinLon: -39.2512, color: "iemanja", mood: "day", months: [1], countries: ["Brazil"], related: ["Uruguay"] },
     // Essaouira itself falls just offshore on the 1:110m coastline, so Gnaoua sits 20 km inland
-    { id: "gnaoua", label: "Gnaoua World Music Festival", lat: 31.5, lon: -9.55, color: "gnaoua", mood: "night", months: [5], countries: ["Morocco"] },
-    { id: "fez-sacred-music", label: "Fez Festival of World Sacred Music", lat: 34.0331, lon: -5.0003, color: "fez", mood: "night", months: [4, 5], countries: ["Morocco"] },
-    { id: "cape-town-carnival", label: "Cape Town Minstrel Carnival", lat: -33.9249, lon: 18.4241, color: "cape", mood: "day", months: [0], countries: ["South Africa"] },
-    { id: "dubai-shopping-festival", label: "Dubai Shopping Festival", lat: 25.2048, lon: 55.2708, color: "dsf", mood: "night", months: [11, 0], countries: ["United Arab Emirates"] },
+    { id: "gnaoua", label: "Gnaoua World Music Festival", lat: 31.5, lon: -9.55, pinLat: 30.9751, pinLon: -7.9988, color: "gnaoua", mood: "night", months: [5], countries: ["Morocco"] },
+    { id: "fez-sacred-music", label: "Fez Festival of World Sacred Music", lat: 34.0331, lon: -5.0003, pinLat: 33.8324, pinLon: -4.6326, color: "fez", mood: "night", months: [4, 5], countries: ["Morocco"] },
+    { id: "cape-town-carnival", label: "Cape Town Minstrel Carnival", lat: -33.9249, lon: 18.4241, pinLat: -33.0281, pinLon: 20.0137, color: "cape", mood: "day", months: [0], countries: ["South Africa"] },
+    { id: "dubai-shopping-festival", label: "Dubai Shopping Festival", lat: 25.2048, lon: 55.2708, pinLat: 24.2457, pinLon: 55.2235, color: "dsf", mood: "night", months: [11, 0], countries: ["United Arab Emirates"] },
     // Nowruz lights the other states on UNESCO's joint inscription
-    { id: "nowruz", label: "Nowruz", lat: 32.4279, lon: 53.6880, color: "nowruz", mood: "day", months: [2], countries: ["Iran"],
+    { id: "nowruz", label: "Nowruz", lat: 32.4279, lon: 53.6880, pinLat: 32.4279, pinLon: 53.688, color: "nowruz", mood: "day", months: [2], countries: ["Iran"],
         related: ["Afghanistan", "Azerbaijan", "India", "Iraq", "Kazakhstan", "Kyrgyzstan", "Pakistan", "Tajikistan", "Turkey", "Turkmenistan", "Uzbekistan"] },
-    { id: "sapporo-snow-festival", label: "Sapporo Snow Festival", lat: 43.0598, lon: 141.3469, color: "sapporo", mood: "day", months: [1], countries: ["Japan"] },
-    { id: "awa-odori", label: "Awa Odori", lat: 34.0703, lon: 134.5548, color: "awa", mood: "night", months: [7], countries: ["Japan"] },
-    { id: "bon-om-touk", label: "Bon Om Touk", lat: 11.5564, lon: 104.9282, color: "bon", mood: "day", months: [10], countries: ["Cambodia"] },
-    { id: "tet", label: "Tết", lat: 14.0583, lon: 108.2772, color: "tet", mood: "day", months: [0, 1], countries: ["Vietnam"] },
-    { id: "thimphu-tshechu", label: "Thimphu Tshechu", lat: 27.4728, lon: 89.639, color: "tshechu", mood: "day", months: [8, 9], countries: ["Bhutan"] },
-    { id: "tihar", label: "Tihar", lat: 28.3949, lon: 84.124, color: "tihar", mood: "night", months: [9, 10], countries: ["Nepal"] },
-    { id: "durga-puja", label: "Durga Puja", lat: 22.5726, lon: 88.3639, color: "durga", mood: "night", months: [8, 9], countries: ["India"], related: ["Bangladesh"] },
-    { id: "vivid-sydney", label: "Vivid Sydney", lat: -33.8688, lon: 151.2093, color: "vivid", mood: "night", months: [4, 5], countries: ["Australia"] },
-    { id: "melbourne-cup", label: "Melbourne Cup", lat: -37.79, lon: 144.912, color: "cup", mood: "day", months: [10], countries: ["Australia"] },
-    { id: "adelaide-fringe", label: "Adelaide Fringe", lat: -34.9285, lon: 138.6007, color: "fringe", mood: "night", months: [1, 2], countries: ["Australia"] },
-    { id: "anzac-day", label: "Anzac Day", lat: -35.2809, lon: 149.1488, color: "anzac", mood: "day", months: [3], countries: ["Australia", "New Zealand"] }
+    { id: "sapporo-snow-festival", label: "Sapporo Snow Festival", lat: 43.0598, lon: 141.3469, pinLat: 42.4907, pinLon: 140.509, color: "sapporo", mood: "day", months: [1], countries: ["Japan"] },
+    { id: "awa-odori", label: "Awa Odori", lat: 34.0703, lon: 134.5548, pinLat: 33.7068, pinLon: 134.159, color: "awa", mood: "night", months: [7], countries: ["Japan"] },
+    { id: "bon-om-touk", label: "Bon Om Touk", lat: 11.5564, lon: 104.9282, pinLat: 12.1837, pinLon: 104.411, color: "bon", mood: "day", months: [10], countries: ["Cambodia"] },
+    { id: "tet", label: "Tết", lat: 14.0583, lon: 108.2772, pinLat: 14.2335, pinLon: 108.178, color: "tet", mood: "day", months: [0, 1], countries: ["Vietnam"] },
+    { id: "thimphu-tshechu", label: "Thimphu Tshechu", lat: 27.4728, lon: 89.639, pinLat: 27.6412, pinLon: 90.0845, color: "tshechu", mood: "day", months: [8, 9], countries: ["Bhutan"] },
+    { id: "tihar", label: "Tihar", lat: 28.3949, lon: 84.124, pinLat: 28.5714, pinLon: 83.2279, color: "tihar", mood: "night", months: [9, 10], countries: ["Nepal"] },
+    { id: "durga-puja", label: "Durga Puja", lat: 22.5726, lon: 88.3639, pinLat: 23.0308, pinLon: 87.0361, color: "durga", mood: "night", months: [8, 9], countries: ["India"], related: ["Bangladesh"] },
+    { id: "vivid-sydney", label: "Vivid Sydney", lat: -33.8688, lon: 151.2093, pinLat: -32.2652, pinLon: 150.19, color: "vivid", mood: "night", months: [4, 5], countries: ["Australia"] },
+    { id: "melbourne-cup", label: "Melbourne Cup", lat: -37.79, lon: 144.912, pinLat: -36.8698, pinLon: 143.457, color: "cup", mood: "day", months: [10], countries: ["Australia"] },
+    { id: "adelaide-fringe", label: "Adelaide Fringe", lat: -34.9285, lon: 138.6007, pinLat: -34.0891, pinLon: 139.986, color: "fringe", mood: "night", months: [1, 2], countries: ["Australia"] },
+    { id: "anzac-day", label: "Anzac Day", lat: -35.2809, lon: 149.1488, pinLat: -35.9641, pinLon: 148.309, color: "anzac", mood: "day", months: [3], countries: ["Australia", "New Zealand"] }
 ];
 const festivalById = Object.fromEntries(FESTIVALS.map((f) => [f.id, f]));
 
@@ -74,11 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const ZOOM = 0.8;                      // zoomed camera distance as a fraction of the home distance
     const DEG = Math.PI / 180;
     // User zoom is a factor z: the camera sits at homeDist / z. Phones and narrow windows stay at 1.3x, where the 2048 map is still sharp;
-    // elsewhere the maps are rebuilt at 4096 the first time the visitor zooms past that.
+    // elsewhere the maps are rebuilt at 4096 the first time the globe is drawn past that. Wide desktops draw their home view at 1.95x,
+    // which needs 4096 anyway, so they start at 4096 instead of drawing the map twice.
     const SMALL = window.matchMedia("(pointer: coarse), (max-width: 720px)").matches;
     const MAX_ZOOM = SMALL ? 1.3 : 1.6;
     const SHARP_ZOOM = 1.28;
-    const LABEL_ZOOM = SMALL ? 1.2 : 1.4; // country labels fade in above this
+    const SHARP_HOME = !SMALL && container.clientWidth > 1100; // the wide home view in viewGoal
+    const LABEL_ZOOM = SMALL ? 1.2 : 1.4; // festival labels fade in above this
 
     // 1. Scene setup
     const scene = new THREE.Scene();
@@ -133,8 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function makeMap(mood, radius) {
         const canvas = document.createElement("canvas");
-        canvas.width = 2048;
-        canvas.height = 1024;
+        canvas.width = SHARP_HOME ? 4096 : 2048;
+        canvas.height = canvas.width / 2;
         const texture = new THREE.CanvasTexture(canvas);
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         const mesh = new THREE.Mesh(
@@ -247,8 +249,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     drawMaps(null);
 
-    // Zooming in on a desktop: double the map's resolution (about 78 MB more of canvas and texture memory), once
-    let sharp = false;
+    // Drawn past SHARP_ZOOM on a desktop: double the map's resolution (about 78 MB more of canvas and texture memory), once
+    let sharp = SHARP_HOME;
     function upgradeMaps() {
         sharp = true;
         [dayMap, nightMap].forEach((m) => {
@@ -387,81 +389,21 @@ document.addEventListener("DOMContentLoaded", () => {
         ringMesh.position.copy(pos);
         ringMesh.lookAt(new THREE.Vector3(0, 0, 0));
 
-        pinMesh.userData = { festival, lat: Math.asin(pos.y / pos.length()) / DEG, ring: ringMesh, dayColor, nightColor, mats, extras,
+        pinMesh.userData = { festival, hitArea, lat: Math.asin(pos.y / pos.length()) / DEG, ring: ringMesh, dayColor, nightColor, mats, extras,
             flame, rays, pennant, basePos: pos.clone(), baseQuat: pinMesh.quaternion.clone(), out: pos.clone().normalize(), rest: true };
         globeGroup.add(pinMesh);
         globeGroup.add(ringMesh);
         return pinMesh;
     }
 
-    // One pin per festival, drawn clear of its country's border and of the other pins (only the pin moves; the data keeps the real place).
-    // Starting at the real place, each pin is nudged away from its nearest border and from close pins, staying inside its own
-    // country and within PIN_SHIFT of the real place. Small countries and islands can't fit the full gaps, so their pins settle mid-country.
+    // One pin per festival, at its pin spot (see FESTIVALS)
     const PIN_SCALE = 0.7;
-    const PIN_GAP = 4;      // degrees between pins (about 450 km; a 1x head is about 3 degrees across)
-    const BORDER_GAP = 1.5; // degrees from a pin to its country's border (about 170 km)
-    const PIN_SHIFT = 3;    // degrees a pin may move from its real place
-    const wrapLon = (d) => ((d + 540) % 360) - 180;
-    const ringsOf = (name) => {
-        const g = countryByName[name].geometry;
-        return g.type === "Polygon" ? g.coordinates : g.coordinates.flat();
-    };
-    const inside = (rings, lon, lat) => {
-        let c = false;
-        rings.forEach((r) => {
-            for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
-                const [xi, yi] = r[i], [xj, yj] = r[j];
-                if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) c = !c;
-            }
-        });
-        return c;
-    };
-    // Nearest border point as an offset from the pin, in degrees with longitude scaled by cos(latitude)
-    const nearestBorder = (s, k) => {
-        let best = { x: 0, y: 0, d: Infinity };
-        s.rings.forEach((r) => {
-            for (let i = 1; i < r.length; i++) {
-                const ax = wrapLon(r[i - 1][0] - s.lon) * k, ay = r[i - 1][1] - s.lat;
-                const bx = wrapLon(r[i][0] - s.lon) * k, by = r[i][1] - s.lat;
-                const len = (bx - ax) ** 2 + (by - ay) ** 2;
-                const t = len ? Math.max(0, Math.min(1, -(ax * (bx - ax) + ay * (by - ay)) / len)) : 0;
-                const x = ax + t * (bx - ax), y = ay + t * (by - ay), d = Math.hypot(x, y);
-                if (d < best.d) best = { x, y, d };
-            }
-        });
-        return best;
-    };
-    const spots = FESTIVALS.map((f) => ({ f, lon: f.lon, lat: f.lat, rings: ringsOf(f.countries[0]) }));
-    for (let it = 0; it < 150; it++) {
-        spots.forEach((s) => {
-            const k = Math.cos(s.lat * DEG);
-            let mx = 0, my = 0;
-            const b = nearestBorder(s, k);
-            if (b.d < BORDER_GAP && b.d > 1e-6) {
-                mx -= (b.x / b.d) * (BORDER_GAP - b.d);
-                my -= (b.y / b.d) * (BORDER_GAP - b.d);
-            }
-            spots.forEach((o) => {
-                const x = wrapLon(o.lon - s.lon) * k, y = o.lat - s.lat, d = Math.hypot(x, y);
-                if (o === s || d >= PIN_GAP || d < 1e-6) return;
-                mx -= (x / d) * (PIN_GAP - d) / 2;
-                my -= (y / d) * (PIN_GAP - d) / 2;
-            });
-            let dx = wrapLon(s.lon - s.f.lon) * k + 0.2 * mx, dy = s.lat - s.f.lat + 0.2 * my;
-            const far = Math.hypot(dx, dy);
-            if (far > PIN_SHIFT) { dx *= PIN_SHIFT / far; dy *= PIN_SHIFT / far; }
-            const lon = s.f.lon + dx / k, lat = s.f.lat + dy;
-            if (inside(s.rings, lon, lat)) { s.lon = lon; s.lat = lat; }
-        });
-    }
-    spots.forEach(({ f, lon, lat }) => {
-        const pin = buildPin(f, latLongToVector3(lat, lon, globeRadius + 0.3));
+    FESTIVALS.forEach((f) => {
+        const pin = buildPin(f, latLongToVector3(f.pinLat, f.pinLon, globeRadius + 0.3));
         pinObjects.push(pin);
         pinById[f.id] = pin;
     });
     const isPin = (obj) => !!(obj && obj.userData.festival);
-
-    const pinLabel = (pin) => pin.userData.festival.label;
 
     // Idle pin motion. Each function poses its style's parts for strength `a` (0 = rest pose, 1 = idle, 2 = hovered, selected or on now)
     // and phase `ph`; the click target moves less than 1 unit. The pin's own rotation and position are offsets from their stored rest values.
@@ -850,10 +792,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const obj = hit ? hit.object : null;
         keyboardMode = false;
         facingPin = null;
-        isHovering = obj !== null; // pause over the globe only
+        isHovering = obj !== null;
         hoveredPin = obj && obj !== dayMap.mesh ? obj : null;
         container.style.cursor = hoveredPin ? "pointer" : isHovering ? "" : "default"; // "" is the stylesheet's grab hand
-        const label = hoveredPin ? pinLabel(hoveredPin) : null;
+        const label = hoveredPin ? hoveredPin.userData.festival.label : null;
         if (label) {
             const heroRect = hero.getBoundingClientRect(); // the tooltip lives in the stage, which the globe may be shifted within
             tooltip.textContent = label;
@@ -969,7 +911,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { passive: false, capture: true });
     container.addEventListener("touchstart", (e) => { if (e.touches.length > 1) targetCamDist = null; }, { capture: true, passive: true });
     // A drag stops the swing back to the front (it would pull the camera back every frame); the zoom still eases
-    controls.addEventListener("start", () => { camFront = false; });
+    let dragging = false;
+    controls.addEventListener("start", () => { camFront = false; dragging = true; });
+    controls.addEventListener("end", () => { dragging = false; });
 
     const zoomOutBtn = document.getElementById("zoom-out");
     const zoomInBtn = document.getElementById("zoom-in");
@@ -996,9 +940,7 @@ document.addEventListener("DOMContentLoaded", () => {
     labelLayer.hidden = true;
     container.append(labelLayer);
     pinObjects.forEach((pin) => {
-        const el = document.createElement("button");
-        el.type = "button";
-        el.tabIndex = -1; // keyboard users reach the same thing with Enter on the facing pin
+        const el = document.createElement("div"); // not focusable: keyboard users reach the same thing with Enter on the facing pin
         el.setAttribute("aria-hidden", "true");
         el.className = "globe-label";
         el.textContent = pin.userData.festival.label;
@@ -1009,13 +951,13 @@ document.addEventListener("DOMContentLoaded", () => {
         pin.userData.label = { el, w: 0, h: 0 };
         labelLayer.append(el);
     });
+    // Widths are cached on first show; measure again once the web fonts (font-display: swap) have replaced the fallback
+    document.fonts.ready.then(() => pinObjects.forEach((pin) => { pin.userData.label.w = 0; }));
     const labelV = new THREE.Vector3();
     function updateLabels(zoom) {
         const show = Math.min(1, Math.max(0, (zoom * view.k - LABEL_ZOOM) / 0.15)); // the bigger home view on wider screens shows them unzoomed
         labelLayer.hidden = show === 0;
         if (show === 0) return;
-        const W = container.clientWidth;
-        const H = container.clientHeight;
         const edge = globeRadius / camera.position.length(); // a point on the globe is in view when its dot with the camera direction exceeds this
         const cands = [];
         pinObjects.forEach((pin) => {
@@ -1253,12 +1195,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Layout: the camera's view offset draws the globe k times bigger with its centre at (cx, cy) of the stage, without a bigger canvas.
     // Home: big and to the right. Card open: centred between the list and the card. Phones keep the centred view (their CSS moves the globe).
+    // Layout numbers are cached (measure) so the render loop reads no layout
     const side = document.querySelector(".hero-side");
+    let W = 0, H = 0, listRight = 0, panelLeft = 0;
+    function measure() {
+        W = container.clientWidth;
+        H = container.clientHeight;
+        listRight = side.offsetLeft + side.offsetWidth;
+        panelLeft = panel.offsetLeft;
+    }
+    measure();
+    const layoutObserver = new ResizeObserver(measure); // the reading view widens the panel to the left
+    [container, side, panel].forEach((el) => layoutObserver.observe(el));
     function viewGoal() {
-        const W = container.clientWidth;
         if (W <= 720) return { k: 1, cx: 0.5, cy: 0.5 };
-        const listRight = side.offsetLeft + side.offsetWidth;
-        if (hero.classList.contains("panel-open")) return { k: W > 1100 ? 1.56 : 1, cx: (listRight + panel.offsetLeft) / 2 / W, cy: 0.5 };
+        if (hero.classList.contains("panel-open")) return { k: W > 1100 ? 1.56 : 1, cx: (listRight + panelLeft) / 2 / W, cy: 0.5 };
         return W > 1100 ? { k: 1.95, cx: 0.78, cy: 0.55 } : { k: 1.25, cx: (listRight + W) / 2 / W, cy: 0.5 };
     }
     const view = viewGoal();
@@ -1280,8 +1231,8 @@ document.addEventListener("DOMContentLoaded", () => {
             globeGroup.rotation.y += (targetRot.y - globeGroup.rotation.y) * EASE;
             if (Math.abs(targetRot.x - globeGroup.rotation.x) + Math.abs(targetRot.y - globeGroup.rotation.y) < 0.001) targetRot = null;
         } else {
-            // Holds still for keyboard users (Tab focus or arrows) only; a mouse click focuses the globe too
-            const spinOn = !isHovering && !selectedPin && !reduceMotion && !keyboardMode && zoomNow() < 1.05 && !container.matches(":focus-visible");
+            // Holds still over a pin, while dragging, and for keyboard users (Tab focus or arrows) only; a mouse click focuses the globe too
+            const spinOn = !hoveredPin && !dragging && !selectedPin && !reduceMotion && !keyboardMode && zoomNow() < 1.05 && !container.matches(":focus-visible");
             spinVel += ((spinOn ? 0.09 : 0) - spinVel) * Math.min(1, dt * 4); // rad/s, eases up and down over about 1 s
             globeGroup.rotation.y += spinVel * dt;
         }
@@ -1309,7 +1260,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const goal = viewGoal();
         for (const key in view) view[key] += (goal[key] - view[key]) * EASE;
-        const W = container.clientWidth, H = container.clientHeight;
         camera.setViewOffset(view.k * W, view.k * H, (view.k / 2 - view.cx) * W, (view.k / 2 - view.cy) * H, W, H);
 
         const zoom = zoomNow();
@@ -1329,8 +1279,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (best !== facingPin) {
                 facingPin = best;
                 hoveredPin = best;
-                globeStatus.textContent = best ? `Facing ${pinLabel(best)}. Press Enter to open it.` : "No festival facing you. Keep turning.";
-                if (best) tooltip.textContent = pinLabel(best);
+                globeStatus.textContent = best ? `Facing ${best.userData.festival.label}. Press Enter to open it.` : "No festival facing you. Keep turning.";
+                if (best) tooltip.textContent = best.userData.festival.label;
                 tooltip.hidden = !best;
             }
             if (facingPin) {
@@ -1375,6 +1325,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const depth = sel ? 1 : 0.7 + 0.45 * Math.max(0, facing);
             const size = PIN_SCALE * pinZoom * depth;
             pin.scale.setScalar((hov && !sel ? 1.4 : 1) * size);
+            pin.userData.hitArea.scale.setScalar(1.15 / depth); // edge pins keep the front pin's click target
             ring.scale.setScalar((sel ? 1.1 * pulse : hov ? 1.5 : pulse) * Math.pow(size, 1.5));
         });
         updateLabels(zoom);
@@ -1394,6 +1345,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Keep the whole globe in view on narrow (portrait) screens
     function fitCamera() {
+        measure();
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         const z = zoomNow(); // a resize keeps the visitor's zoom
