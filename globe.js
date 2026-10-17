@@ -1344,6 +1344,15 @@ document.addEventListener("DOMContentLoaded", () => {
         "durga-puja": { kind: "petal", cols: ["#dc2626", "#b91c1c", "#f59e0b", "#ea580c"] }, // hibiscus and marigold
         nowruz: { kind: "petal", cols: ["#fbcfe8", "#f9a8d4", "#fdf2f8", "#bbf7d0"] }, // spring blossom
         "melbourne-cup": { kind: "petal", cols: ["#e11d48", "#fb7185", "#fda4af", "#fef3c7"] }, // Flemington roses
+        "rio-carnival": { kind: "confetti", cols: ["#22c55e", "#a3e635", "#facc15", "#f472b6", "#38bdf8"] }, // samba school sequins
+        "mardi-gras": { kind: "confetti", cols: ["#7e22ce", "#a855f7", "#16a34a", "#facc15"] }, // purple, green and gold
+        "venice-carnival": { kind: "confetti", cols: ["#a21caf", "#f0abfc", "#facc15", "#dc2626", "#f8fafc"] }, // coriandoli, mask silk and gold
+        "cape-town-carnival": { kind: "confetti", cols: ["#ea580c", "#facc15", "#dc2626", "#2563eb", "#16a34a"] }, // troupe satin colours
+        "vina-del-mar": { kind: "confetti", cols: ["#e2e8f0", "#cbd5e1", "#94a3b8", "#34d399"] }, // the silver seagull
+        coachella: { kind: "confetti", cols: ["#f59e0b", "#d2c387", "#f472b6", "#22d3ee"] }, // desert sun and lit installations
+        oktoberfest: { kind: "confetti", cols: ["#1d4ed8", "#2563eb", "#ffffff", "#f8fafc"] }, // Bavarian blue and white
+        guelaguetza: { kind: "confetti", cols: ["#be185d", "#f472b6", "#facc15", "#16a34a", "#dc2626"] }, // embroidered regional dress
+        "adelaide-fringe": { kind: "confetti", cols: ["#ec4899", "#f9a8d4", "#a855f7", "#facc15"] }, // Fringe pink
     };
     const fxCanvas = document.createElement("canvas");
     fxCanvas.className = "globe-fx";
@@ -1372,10 +1381,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const sp = rand(...speed) * s;
                 fxParts.push({
                     kind: k, x, y, t: 0, col: cols[(Math.random() * cols.length) | 0],
-                    vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (k === "petal" ? 60 : k === "speck" ? 0 : 30) * s,
-                    g: { spark: 130, puff: 0, petal: 90, speck: 60 }[k] * s,
-                    drag: { spark: 0.4, puff: 1.6, petal: 0.4, speck: 1 }[k],
-                    size: { spark: rand(1.2, 2.2) * Math.sqrt(s), puff: rand(8, 14) * s, petal: rand(4, 6) * s, speck: rand(1.2, 2.4) }[k],
+                    vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (k === "petal" || k === "confetti" ? 60 : k === "speck" ? 0 : 30) * s,
+                    g: { spark: 130, puff: 0, petal: 90, speck: 60, confetti: 110 }[k] * s,
+                    drag: { spark: 0.4, puff: 1.6, petal: 0.4, speck: 1, confetti: 1.1 }[k],
+                    size: { spark: rand(1.2, 2.2) * Math.sqrt(s), puff: rand(8, 14) * s, petal: rand(4, 6) * s, confetti: rand(5, 7) * s, speck: rand(1.2, 2.4) }[k],
                     grow: k === "puff" ? rand(25, 45) * s : 0,
                     life: rand(1.2, 1.8), delay: k === "speck" ? 0 : rand(0, 0.15),
                     rot: rand(0, 6.28), vr: rand(-4, 4), sway: rand(0, 6.28),
@@ -1386,6 +1395,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (kind === "spark") make("spark", 80, [60, 170]);
         if (kind === "puff") { make("puff", 22, [30, 110]); make("speck", 40, [60, 160]); }
         if (kind === "petal") make("petal", 45, [60, 170]);
+        if (kind === "confetti") make("confetti", 70, [90, 220]);
     }
 
     function drawBurst(dt) {
@@ -1398,14 +1408,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const d = Math.exp(-p.drag * dt);
             p.vx *= d;
             p.vy = p.vy * d + p.g * dt;
-            if (p.kind === "petal") p.x += Math.sin(p.t * 3 + p.sway) * 20 * dt;
+            if (p.kind === "petal" || p.kind === "confetti") p.x += Math.sin(p.t * 3 + p.sway) * 20 * dt;
             p.x += p.vx * dt;
             p.y += p.vy * dt;
             p.rot += p.vr * dt;
             const k = p.t / p.life;
             fx.save();
             fx.globalAlpha = k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85;
-            fx.globalCompositeOperation = night && p.kind !== "petal" ? "lighter" : "source-over";
+            fx.globalCompositeOperation = night && p.kind !== "petal" && p.kind !== "confetti" ? "lighter" : "source-over";
             fx.fillStyle = fx.strokeStyle = p.col;
             fx.beginPath();
             if (p.kind === "spark") {
@@ -1432,7 +1442,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 fx.translate(p.x, p.y);
                 fx.rotate(p.rot);
                 fx.scale(1, 0.55 + 0.45 * Math.sin(p.t * 6 + p.sway)); // petal flutter
-                fx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, 6.28);
+                if (p.kind === "confetti") fx.rect(-p.size / 2, -p.size / 4, p.size, p.size / 2); // a paper strip
+                else fx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, 6.28);
                 fx.fill();
             }
             fx.restore();
