@@ -1547,11 +1547,14 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             ring.material.opacity = (dimmed ? 0.2 : 0.8) * show;
             // Idle motion: still for dimmed pins, pins on the far side of the globe and reduced motion
-            const live = !reduceMotion && !dimmed && pin.getWorldPosition(motionPos).normalize().dot(motionCam) > 0.2;
+            const facing = pin.getWorldPosition(motionPos).normalize().dot(motionCam);
+            const live = !reduceMotion && !dimmed && facing > 0.2;
             animatePin(pin, pin.userData.style, t, live ? (sel || hov || swing > 0.2 ? 2 : 1) : 0, i * 2.4);
             // Selected pin shrinks so small countries (Germany) stay visible; its ring marks the spot (a fanned pin is small already)
             // Zoomed in, pins grow on screen only gently (world size shrinks as z^-0.6), and the hit area follows
-            const size = (fanOf ? FAN_SCALE : 1) * pinZoom * show;
+            // Depth: pins facing the viewer read 1.15x, edge and far-side pins 0.7x (the selected pin keeps its own size)
+            const depth = sel ? 1 : 0.7 + 0.45 * Math.max(0, facing);
+            const size = (fanOf ? FAN_SCALE : 1) * pinZoom * show * depth;
             pin.scale.setScalar((sel ? (fanOf ? 1 : 0.7) : hov ? 1.4 : 1) * size);
             ring.scale.setScalar((sel ? 1.1 * pulse : hov ? 1.5 : pulse) * Math.pow(size, 1.5));
         });
