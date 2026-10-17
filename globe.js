@@ -774,8 +774,19 @@ document.addEventListener("DOMContentLoaded", () => {
         homeBtn.hidden = listMode || !navFrom; // a second cross, to leave the list's festivals for the globe
     }
     // `animate` is true for in-page changes within one open festival; opening on /about stays instant
+    // Scroll reveals: long-read blocks below the fold when it opens fade and rise in the first time they scroll into view
+    const revealer = reduceMotion ? null : new IntersectionObserver((entries) => entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.remove("reveal");
+        revealer.unobserve(e.target);
+    }), { root: panel, rootMargin: "0px 0px -40px 0px" });
+
     function setReading(on, animate) {
         clearTimeout(readingTimer);
+        if (revealer) {
+            revealer.disconnect();
+            panel.querySelectorAll(".reveal").forEach((el) => el.classList.remove("reveal"));
+        }
         animate = !!animate && !reduceMotion; // toggle() needs a real boolean
         panel.classList.toggle("reading-anim", animate);
         panel.classList.toggle("reading-out", animate && !on); // keeps the long read on screen while it fades out
@@ -785,6 +796,15 @@ document.addEventListener("DOMContentLoaded", () => {
         updateNav();
         if (!on) return;
         panel.scrollTop = 0;
+        const about = panel.querySelector(".festival-card:not([hidden]) .festival-about");
+        if (revealer && about) {
+            const bottom = panel.getBoundingClientRect().bottom;
+            for (const el of about.children) {
+                if (el.getBoundingClientRect().top < bottom) continue;
+                el.classList.add("reveal");
+                revealer.observe(el);
+            }
+        }
         const heading = panel.querySelector(".festival-card:not([hidden]) .festival-about h3");
         if (heading) heading.focus({ preventScroll: true });
     }
@@ -1303,6 +1323,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 8. Render loop
     const clock = new THREE.Clock();
     let lastT = 0;
+    let spinVel = 0; // idle spin speed, rad/s
     let fanOn = false; // zoomed in far enough that multi-festival pins are fanned (with hysteresis)
     const inkColor = new THREE.Color(token("--ink"));
     const whiteColor = new THREE.Color(0xffffff);
@@ -1312,15 +1333,20 @@ document.addEventListener("DOMContentLoaded", () => {
     function animate() {
         requestAnimationFrame(animate);
         const t = clock.getElapsedTime();
+        const dt = Math.min(t - lastT, 0.1);
+        lastT = t;
 
         // Spin/tilt toward the selected country, or idle-spin when nothing is selected
         if (targetRot) {
+            spinVel = 0;
             globeGroup.rotation.x += (targetRot.x - globeGroup.rotation.x) * EASE;
             globeGroup.rotation.y += (targetRot.y - globeGroup.rotation.y) * EASE;
             if (Math.abs(targetRot.x - globeGroup.rotation.x) + Math.abs(targetRot.y - globeGroup.rotation.y) < 0.001) targetRot = null;
-        } else if (!isHovering && !selectedPin && !reduceMotion && !keyboardMode && zoomNow() < 1.05 && !container.matches(":focus-visible")) {
+        } else {
             // Holds still for keyboard users (Tab focus or arrows) only; a mouse click focuses the globe too
-            globeGroup.rotation.y += 0.0015;
+            const spinOn = !isHovering && !selectedPin && !reduceMotion && !keyboardMode && zoomNow() < 1.05 && !container.matches(":focus-visible");
+            spinVel += ((spinOn ? 0.09 : 0) - spinVel) * Math.min(1, dt * 4); // rad/s, eases up and down over about 1 s
+            globeGroup.rotation.y += spinVel * dt;
         }
 
         // Zoom: ease the camera toward the front (+z) at the target distance
@@ -1386,8 +1412,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // A hovered (or else selected) month on the year ring, or a chosen region, dims the festivals outside it the same way.
         // A pin with several festivals cycles their colours (2.5 s hold, 1.5 s fade), pausing while hovered,
         // and holds the open festival's colour (or the first one's under reduced motion). While its country's list is shown it keeps cycling.
-        const dt = Math.min(t - lastT, 0.1);
-        lastT = t;
         const ringMonth = hoveredMonth ?? selectedMonth;
         const matches = (f) => (ringMonth === null || f.months.includes(ringMonth)) && (selectedRegion === null || regionOf[f.id] === selectedRegion);
         motionCam.copy(camera.position).normalize();

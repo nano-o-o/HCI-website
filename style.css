@@ -1105,6 +1105,16 @@ body,
     animation: fadeInSlow 0.3s ease backwards;
 }
 
+/* Scroll reveals (the .reveal class is set and cleared by setReading in globe.js, never under reduced motion) */
+.festival-about > * {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.festival-about > .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+}
+
 @keyframes aboutIn {
     from { opacity: 0; transform: translateY(12px); }
 }
