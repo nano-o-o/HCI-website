@@ -290,11 +290,6 @@ body,
     cursor: grabbing;
 }
 
-/* Panel open: centre the globe between the festival list (left) and the panel (right) */
-.globe-hero.panel-open #globe-container {
-    transform: translateX(-42px);
-}
-
 /* Left column: intro + festival list */
 .hero-side {
     position: absolute;
@@ -1097,11 +1092,6 @@ body,
 
     .hero-intro h1 {
         font-size: 1.6rem;
-    }
-
-    /* Centre the globe in the space right of the list (half the column: 230px + 2rem margin) */
-    #globe-container {
-        transform: translateX(131px);
     }
 }
 

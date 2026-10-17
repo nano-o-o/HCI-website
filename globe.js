@@ -381,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const extras = { push: [needle], flag: [needle, pennant], lantern: [needle, ...caps], marker: [], candle: [flame], firework: [needle, ...rays] };
 
         const ringMesh = new THREE.Mesh(
-            new THREE.RingGeometry(3.2, 4.5, 24),
+            new THREE.RingGeometry(1.6, 2.25, 24),
             new THREE.MeshBasicMaterial({ color: dayColor.clone(), side: THREE.DoubleSide, transparent: true, opacity: 0.8 })
         );
         ringMesh.position.copy(pos);
@@ -394,21 +394,68 @@ document.addEventListener("DOMContentLoaded", () => {
         return pinMesh;
     }
 
-    // One pin per festival. A festival closer than PIN_GAP to an earlier one in its country is drawn pushed straight away from it
-    // (only the pin moves; the data keeps the real place): a head at 1x is about 3 degrees across, so Valencia and Buñol would overlap
+    // One pin per festival, drawn clear of its country's border and of the other pins (only the pin moves; the data keeps the real place).
+    // Starting at the real place, each pin is nudged away from its nearest border and from close pins, staying inside its own
+    // country and within PIN_SHIFT of the real place. Small countries and islands can't fit the full gaps, so their pins settle mid-country.
     const PIN_SCALE = 0.7;
-    const PIN_GAP = 2.7 * DEG; // about 300 km
-    const spotsByCountry = {};
-    FESTIVALS.forEach((f) => {
-        const pos = latLongToVector3(f.lat, f.lon, globeRadius + 0.3);
-        const spots = (spotsByCountry[f.countries[0]] ||= []);
-        spots.forEach((o) => {
-            if (pos.angleTo(o) >= PIN_GAP) return;
-            const axis = o.clone().cross(pos).normalize();
-            pos.copy(o).applyAxisAngle(axis, PIN_GAP);
+    const PIN_GAP = 4;      // degrees between pins (about 450 km; a 1x head is about 3 degrees across)
+    const BORDER_GAP = 1.5; // degrees from a pin to its country's border (about 170 km)
+    const PIN_SHIFT = 3;    // degrees a pin may move from its real place
+    const wrapLon = (d) => ((d + 540) % 360) - 180;
+    const ringsOf = (name) => {
+        const g = countryByName[name].geometry;
+        return g.type === "Polygon" ? g.coordinates : g.coordinates.flat();
+    };
+    const inside = (rings, lon, lat) => {
+        let c = false;
+        rings.forEach((r) => {
+            for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+                const [xi, yi] = r[i], [xj, yj] = r[j];
+                if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) c = !c;
+            }
         });
-        spots.push(pos);
-        const pin = buildPin(f, pos);
+        return c;
+    };
+    // Nearest border point as an offset from the pin, in degrees with longitude scaled by cos(latitude)
+    const nearestBorder = (s, k) => {
+        let best = { x: 0, y: 0, d: Infinity };
+        s.rings.forEach((r) => {
+            for (let i = 1; i < r.length; i++) {
+                const ax = wrapLon(r[i - 1][0] - s.lon) * k, ay = r[i - 1][1] - s.lat;
+                const bx = wrapLon(r[i][0] - s.lon) * k, by = r[i][1] - s.lat;
+                const len = (bx - ax) ** 2 + (by - ay) ** 2;
+                const t = len ? Math.max(0, Math.min(1, -(ax * (bx - ax) + ay * (by - ay)) / len)) : 0;
+                const x = ax + t * (bx - ax), y = ay + t * (by - ay), d = Math.hypot(x, y);
+                if (d < best.d) best = { x, y, d };
+            }
+        });
+        return best;
+    };
+    const spots = FESTIVALS.map((f) => ({ f, lon: f.lon, lat: f.lat, rings: ringsOf(f.countries[0]) }));
+    for (let it = 0; it < 150; it++) {
+        spots.forEach((s) => {
+            const k = Math.cos(s.lat * DEG);
+            let mx = 0, my = 0;
+            const b = nearestBorder(s, k);
+            if (b.d < BORDER_GAP && b.d > 1e-6) {
+                mx -= (b.x / b.d) * (BORDER_GAP - b.d);
+                my -= (b.y / b.d) * (BORDER_GAP - b.d);
+            }
+            spots.forEach((o) => {
+                const x = wrapLon(o.lon - s.lon) * k, y = o.lat - s.lat, d = Math.hypot(x, y);
+                if (o === s || d >= PIN_GAP || d < 1e-6) return;
+                mx -= (x / d) * (PIN_GAP - d) / 2;
+                my -= (y / d) * (PIN_GAP - d) / 2;
+            });
+            let dx = wrapLon(s.lon - s.f.lon) * k + 0.2 * mx, dy = s.lat - s.f.lat + 0.2 * my;
+            const far = Math.hypot(dx, dy);
+            if (far > PIN_SHIFT) { dx *= PIN_SHIFT / far; dy *= PIN_SHIFT / far; }
+            const lon = s.f.lon + dx / k, lat = s.f.lat + dy;
+            if (inside(s.rings, lon, lat)) { s.lon = lon; s.lat = lat; }
+        });
+    }
+    spots.forEach(({ f, lon, lat }) => {
+        const pin = buildPin(f, latLongToVector3(lat, lon, globeRadius + 0.3));
         pinObjects.push(pin);
         pinById[f.id] = pin;
     });
@@ -964,7 +1011,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const labelV = new THREE.Vector3();
     function updateLabels(zoom) {
-        const show = Math.min(1, Math.max(0, (zoom - LABEL_ZOOM) / 0.15));
+        const show = Math.min(1, Math.max(0, (zoom * view.k - LABEL_ZOOM) / 0.15)); // the bigger home view on wider screens shows them unzoomed
         labelLayer.hidden = show === 0;
         if (show === 0) return;
         const W = container.clientWidth;
@@ -985,7 +1032,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (o > 0) {
                 pin.getWorldPosition(labelV).project(camera);
                 const x = ((labelV.x + 1) / 2) * W;
-                const y = ((1 - labelV.y) / 2) * H + 16 * Math.pow(Math.max(zoom, 1), 0.4); // below the pin's head
+                const y = ((1 - labelV.y) / 2) * H + 16 * view.k * Math.pow(Math.max(zoom, 1), 0.4); // below the pin's head
                 const box = [x - lab.w / 2 - 4, y - 4, x + lab.w / 2 + 4, y + lab.h + 4];
                 if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) o = 0;
                 else {
@@ -1203,6 +1250,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const clock = new THREE.Clock();
     let lastT = 0;
     let spinVel = 0; // idle spin speed, rad/s
+
+    // Layout: the camera's view offset draws the globe k times bigger with its centre at (cx, cy) of the stage, without a bigger canvas.
+    // Home: big and to the right. Card open: centred between the list and the card. Phones keep the centred view (their CSS moves the globe).
+    const side = document.querySelector(".hero-side");
+    function viewGoal() {
+        const W = container.clientWidth;
+        if (W <= 720) return { k: 1, cx: 0.5, cy: 0.5 };
+        const listRight = side.offsetLeft + side.offsetWidth;
+        if (hero.classList.contains("panel-open")) return { k: W > 1100 ? 1.56 : 1, cx: (listRight + panel.offsetLeft) / 2 / W, cy: 0.5 };
+        return W > 1100 ? { k: 1.95, cx: 0.78, cy: 0.55 } : { k: 1.25, cx: (listRight + W) / 2 / W, cy: 0.5 };
+    }
+    const view = viewGoal();
     const inkColor = new THREE.Color(token("--ink"));
     const whiteColor = new THREE.Color(0xffffff);
     const motionPos = new THREE.Vector3();
@@ -1248,8 +1307,13 @@ document.addEventListener("DOMContentLoaded", () => {
         stars.visible = nightMix > 0.002;
         ambientLight.intensity = 0.7 + 0.15 * nightMix;
 
+        const goal = viewGoal();
+        for (const key in view) view[key] += (goal[key] - view[key]) * EASE;
+        const W = container.clientWidth, H = container.clientHeight;
+        camera.setViewOffset(view.k * W, view.k * H, (view.k / 2 - view.cx) * W, (view.k / 2 - view.cy) * H, W, H);
+
         const zoom = zoomNow();
-        if (!sharp && !SMALL && zoom > SHARP_ZOOM) upgradeMaps();
+        if (!sharp && !SMALL && zoom * view.k > SHARP_ZOOM) upgradeMaps();
         // Keyboard: highlight and announce the pin facing the viewer (within about 25 degrees)
         if (keyboardMode && !selectedPin) {
             const toCamera = camera.position.clone().normalize();
