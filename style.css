@@ -118,6 +118,13 @@
     --festival-loy: #b41e96;
     --festival-bon: #0f7869;
     --festival-tet: #00782d;
+    --festival-tshechu: #5a6996;
+    --festival-tihar: #875a2d;
+    --festival-durga: #874b4b;
+    --festival-vivid: #782df0;
+    --festival-cup: #005a78;
+    --festival-fringe: #964ba5;
+    --festival-anzac: #78693c;
     --glow-diwali: #fde047;
     --glow-lunar: #f87171;
     --glow-eid: #2dd4bf;
@@ -146,6 +153,13 @@
     --glow-loy: #d296d2;
     --glow-bon: #96e1c3;
     --glow-tet: #0fd25a;
+    --glow-tshechu: #b4c3ff;
+    --glow-tihar: #d2b400;
+    --glow-durga: #f07896;
+    --glow-vivid: #87a5ff;
+    --glow-cup: #1eb4d2;
+    --glow-fringe: #ffa5d2;
+    --glow-anzac: #e1ff2d;
 
     --font-display: "Fraunces", Georgia, serif;
     --font-body: "Alegreya Sans", system-ui, sans-serif;
@@ -444,6 +458,13 @@ body,
 .region-btn[data-target="loy-krathong"] { --c: var(--festival-loy); --g: var(--glow-loy); }
 .region-btn[data-target="bon-om-touk"] { --c: var(--festival-bon); --g: var(--glow-bon); }
 .region-btn[data-target="tet"] { --c: var(--festival-tet); --g: var(--glow-tet); }
+.region-btn[data-target="thimphu-tshechu"] { --c: var(--festival-tshechu); --g: var(--glow-tshechu); }
+.region-btn[data-target="tihar"] { --c: var(--festival-tihar); --g: var(--glow-tihar); }
+.region-btn[data-target="durga-puja"] { --c: var(--festival-durga); --g: var(--glow-durga); }
+.region-btn[data-target="vivid-sydney"] { --c: var(--festival-vivid); --g: var(--glow-vivid); }
+.region-btn[data-target="melbourne-cup"] { --c: var(--festival-cup); --g: var(--glow-cup); }
+.region-btn[data-target="adelaide-fringe"] { --c: var(--festival-fringe); --g: var(--glow-fringe); }
+.region-btn[data-target="anzac-day"] { --c: var(--festival-anzac); --g: var(--glow-anzac); }
 
 .region-btn {
     width: 100%;
@@ -851,6 +872,13 @@ body,
 #card-loy-krathong { --c: var(--festival-loy); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 9h11l-1.6 3H3.1zM3 9l1.5-4.2L6 9zM5.6 9l1.4-5.4L8.4 9zM8 9l1.5-4.2L11 9zM15.5 9h11l-1.6 3h-7.8zM17 9l1.5-4.2L20 9zM19.6 9l1.4-5.4L22.4 9zM22 9l1.5-4.2L25 9z'/><path d='M7 3.2V.8M21 3.2V.8' stroke='black' stroke-width='1'/></svg>"); } /* krathong */
 #card-bon-om-touk { --c: var(--festival-bon); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M.5 8h27q-2.4 4-6 4H5.5Q2.5 12 .5 8z'/><path d='M4 8 2.4 4M9 8 7.4 4M14 8l-1.6-4M19 8l-1.6-4M24 8l-1.6-4' stroke='black' stroke-width='1.1' stroke-linecap='round'/></svg>"); } /* racing boats */
 #card-tet { --c: var(--festival-tet); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><circle cx='7' cy='3.4' r='2.4'/><circle cx='10.4' cy='5.9' r='2.4'/><circle cx='9.1' cy='9.9' r='2.4'/><circle cx='4.9' cy='9.9' r='2.4'/><circle cx='3.6' cy='5.9' r='2.4'/><circle cx='21' cy='3.4' r='2.4'/><circle cx='24.4' cy='5.9' r='2.4'/><circle cx='23.1' cy='9.9' r='2.4'/><circle cx='18.9' cy='9.9' r='2.4'/><circle cx='17.6' cy='5.9' r='2.4'/></svg>"); } /* mai blossoms */
+#card-thimphu-tshechu { --c: var(--festival-tshechu); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M.5 2.5Q14 6 27.5 2.5' fill='none' stroke='black' stroke-width='1'/><path d='M2.5 3.6h4v5.4h-4zM9.5 4.6h4v5.4h-4zM16.5 4.6h4v5.4h-4zM23.5 3.4h4v5.4h-4z'/></svg>"); } /* prayer flags */
+#card-tihar { --c: var(--festival-tihar); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 9h11Q11.6 13 7 13T1.5 9zM15.5 9h11Q25.6 13 21 13T15.5 9z'/><path d='M7 8.2Q4.6 5.4 7 1.2Q9.4 5.4 7 8.2zM21 8.2Q18.6 5.4 21 1.2Q23.4 5.4 21 8.2z'/></svg>"); } /* diyo lamps */
+#card-durga-puja { --c: var(--festival-durga); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M7 13V1.5M3 2.5Q3 7 7 7T11 2.5M21 13V1.5M17 2.5Q17 7 21 7T25 2.5' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'/></svg>"); } /* trishul */
+#card-vivid-sydney { --c: var(--festival-vivid); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1 12.5Q2.5 5 8.5 1.5Q7 7 8 12.5zM8 12.5Q9.5 7.5 13.5 5Q12.5 9 13 12.5zM15 12.5Q16.5 5 22.5 1.5Q21 7 22 12.5zM22 12.5Q23.5 7.5 27.5 5Q26.5 9 27 12.5z'/></svg>"); } /* Opera House sails */
+#card-melbourne-cup { --c: var(--festival-cup); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M3 2v4.5a4 4 0 0 0 8 0V2M17 2v4.5a4 4 0 0 0 8 0V2' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>"); } /* horseshoes */
+#card-adelaide-fringe { --c: var(--festival-fringe); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1 13 7 4l6 9zM15 13l6-9 6 9z'/><path d='M7 4V.8M21 4V.8' stroke='black' stroke-width='1'/><path d='M7 .8h3l-3 1.6zM21 .8h3l-3 1.6z'/></svg>"); } /* circus tents */
+#card-anzac-day { --c: var(--festival-anzac); --motif: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path fill-rule='evenodd' d='M7 2.2a4.8 4.8 0 1 0 0 9.6a4.8 4.8 0 1 0 0-9.6zM7 5.6a1.4 1.4 0 1 1 0 2.8a1.4 1.4 0 1 1 0-2.8zM21 2.2a4.8 4.8 0 1 0 0 9.6a4.8 4.8 0 1 0 0-9.6zM21 5.6a1.4 1.4 0 1 1 0 2.8a1.4 1.4 0 1 1 0-2.8z'/></svg>"); } /* poppies */
 
 .festival-card::before {
     content: "";

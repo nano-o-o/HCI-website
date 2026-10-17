@@ -50,7 +50,15 @@ const FESTIVALS = [
     { id: "sapporo-snow-festival", label: "Sapporo Snow Festival", lat: 36.2048, lon: 138.2529, color: "sapporo", mood: "day", months: [1], countries: ["Japan"] },
     { id: "awa-odori", label: "Awa Odori", lat: 34.0703, lon: 134.5548, color: "awa", mood: "night", months: [7], countries: ["Japan"] },
     { id: "bon-om-touk", label: "Bon Om Touk", lat: 11.5564, lon: 104.9282, color: "bon", mood: "day", months: [10], countries: ["Cambodia"] },
-    { id: "tet", label: "Tết", lat: 14.0583, lon: 108.2772, color: "tet", mood: "day", months: [0, 1], countries: ["Vietnam"] }
+    { id: "tet", label: "Tết", lat: 14.0583, lon: 108.2772, color: "tet", mood: "day", months: [0, 1], countries: ["Vietnam"] },
+    { id: "thimphu-tshechu", label: "Thimphu Tshechu", lat: 27.4728, lon: 89.639, color: "tshechu", mood: "day", months: [8, 9], countries: ["Bhutan"] },
+    { id: "tihar", label: "Tihar", lat: 28.3949, lon: 84.124, color: "tihar", mood: "night", months: [9, 10], countries: ["Nepal"] },
+    { id: "durga-puja", label: "Durga Puja", lat: 22.5726, lon: 88.3639, color: "durga", mood: "night", months: [8, 9], countries: ["India"], related: ["Bangladesh"] },
+    // Vivid comes first and carries Australia's centre, so the pin sits between Sydney, Melbourne, Adelaide and Canberra
+    { id: "vivid-sydney", label: "Vivid Sydney", lat: -25.2744, lon: 133.7751, color: "vivid", mood: "night", months: [4, 5], countries: ["Australia"] },
+    { id: "melbourne-cup", label: "Melbourne Cup", lat: -37.79, lon: 144.912, color: "cup", mood: "day", months: [10], countries: ["Australia"] },
+    { id: "adelaide-fringe", label: "Adelaide Fringe", lat: -34.9285, lon: 138.6007, color: "fringe", mood: "night", months: [1, 2], countries: ["Australia"] },
+    { id: "anzac-day", label: "Anzac Day", lat: -35.2809, lon: 149.13, color: "anzac", mood: "day", months: [3], countries: ["Australia", "New Zealand"] }
 ];
 const festivalById = Object.fromEntries(FESTIVALS.map((f) => [f.id, f]));
 

@@ -66,6 +66,13 @@ colors:
   festival-loy: "#b41e96"
   festival-bon: "#0f7869"
   festival-tet: "#00782d"
+  festival-tshechu: "#5a6996"
+  festival-tihar: "#875a2d"
+  festival-durga: "#874b4b"
+  festival-vivid: "#782df0"
+  festival-cup: "#005a78"
+  festival-fringe: "#964ba5"
+  festival-anzac: "#78693c"
   glow-diwali: "#fde047"
   glow-lunar: "#f87171"
   glow-eid: "#2dd4bf"
@@ -94,6 +101,13 @@ colors:
   glow-loy: "#d296d2"
   glow-bon: "#96e1c3"
   glow-tet: "#0fd25a"
+  glow-tshechu: "#b4c3ff"
+  glow-tihar: "#d2b400"
+  glow-durga: "#f07896"
+  glow-vivid: "#87a5ff"
+  glow-cup: "#1eb4d2"
+  glow-fringe: "#ffa5d2"
+  glow-anzac: "#e1ff2d"
 typography:
   display:
     fontFamily: Fraunces
@@ -120,7 +134,7 @@ The site is a festival atlas with a 3D globe as the hero. It opens in a warm mor
 - **Accent:** `amber-text` by day and `gold` at night, for hovers. On light surfaces `gold` is decoration only, never text.
 - **Cards (`cream`, `ink*`):** the same paper card in both themes. Inside a card the focus ring is always `ink`.
 - **Globe (`globe-day-*`, `globe-night-*`):** both sets are always defined. The globe draws a day map and a night map and crossfades between them. The map has a faint 30° graticule and thin country borders in the coast colour; at night, stars (`on-night`) fade in behind it.
-- **Festival colours:** every festival owns one pair. `festival-*` is the only one allowed behind text (badges, the pressed list item) and is also the day pin and day country highlight. `glow-*` is the night pin and night country highlight. The twenty-eight pairs were chosen to stay as far apart as possible (smallest CIEDE2000 difference 9.4 by day, Bastille Day and Tết, and 9.4 at night, Mardi Gras and Awa Odori; the nine added with the Europe and Americas batch were searched with the first eight fixed, the five added with the Africa and Middle East batch with those seventeen fixed, and the six added with the East Asia and Southeast Asia batch with those twenty-two fixed), because the list is the pins' colour key; check a new festival's pair against the others before adding it. The selected pin's ring uses `ink` by day and white at night so it stands out against its own highlighted country.
+- **Festival colours:** every festival owns one pair. `festival-*` is the only one allowed behind text (badges, the pressed list item) and is also the day pin and day country highlight. `glow-*` is the night pin and night country highlight. The thirty-five pairs were chosen to stay as far apart as possible (smallest CIEDE2000 difference 8.3 by day, Coachella and Tihar, and 8.3 at night, Dubai Shopping Festival and Tihar; the nine added with the Europe and Americas batch were searched with the first eight fixed, the five added with the Africa and Middle East batch with those seventeen fixed, the six added with the East Asia and Southeast Asia batch with those twenty-two fixed, and the seven added with the South Asia and Oceania batch with those twenty-eight fixed), because the list is the pins' colour key; check a new festival's pair against the others before adding it. The selected pin's ring uses `ink` by day and white at night so it stands out against its own highlighted country.
 - **Code ownership:** `style.css` `:root` is the only place these values live, and `globe.js` reads them from there.
 
 ## Themes

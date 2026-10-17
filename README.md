@@ -8,7 +8,7 @@ Pick a festival from the list, or spin the globe and click a pin. The globe turn
 
 ## Festivals
 
-Cape Town Minstrel Carnival · Lunar New Year · Tết · Festa de Iemanjá · Sapporo Snow Festival · Venice Carnival · Mardi Gras · Rio Carnival · Viña del Mar Festival · Lantern Festival · Las Fallas · Holi · Nowruz · Coachella · Songkran · Fez Festival of World Sacred Music · Gnaoua World Music Festival · Bastille Day · Guelaguetza · Awa Odori · La Tomatina · Oktoberfest · Diwali · Día de Muertos · Loy Krathong · Bon Om Touk · Dubai Shopping Festival · Eid al-Fitr
+Cape Town Minstrel Carnival · Lunar New Year · Tết · Festa de Iemanjá · Sapporo Snow Festival · Venice Carnival · Mardi Gras · Rio Carnival · Viña del Mar Festival · Lantern Festival · Adelaide Fringe · Las Fallas · Holi · Nowruz · Coachella · Songkran · Anzac Day · Fez Festival of World Sacred Music · Vivid Sydney · Gnaoua World Music Festival · Bastille Day · Guelaguetza · Awa Odori · La Tomatina · Oktoberfest · Thimphu Tshechu · Durga Puja · Diwali · Tihar · Día de Muertos · Loy Krathong · Bon Om Touk · Melbourne Cup · Dubai Shopping Festival · Eid al-Fitr
 
 ## Features
 
