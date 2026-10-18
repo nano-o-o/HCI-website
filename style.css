@@ -108,7 +108,7 @@
     --festival-guelaguetza: #960f5a;
     --festival-iemanja: #2d00ff;
     --festival-gnaoua: #1e4ba5;
-    --festival-fez: #785a0f;
+    --festival-fez: #937206;
     --festival-cape: #c34b00;
     --festival-dsf: #78780f;
     --festival-nowruz: #5a693c;
@@ -119,11 +119,11 @@
     --festival-bon: #0f7869;
     --festival-tet: #00782d;
     --festival-tshechu: #5a6996;
-    --festival-tihar: #875a2d;
+    --festival-tihar: #874500;
     --festival-durga: #874b4b;
-    --festival-vivid: #782df0;
+    --festival-vivid: #6f4bd8;
     --festival-cup: #005a78;
-    --festival-fringe: #964ba5;
+    --festival-fringe: #9960b1;
     --festival-anzac: #78693c;
     --glow-diwali: #fde047;
     --glow-lunar: #f87171;
@@ -153,12 +153,12 @@
     --glow-loy: #d296d2;
     --glow-bon: #96e1c3;
     --glow-tet: #0fd25a;
-    --glow-tshechu: #b4c3ff;
-    --glow-tihar: #d2b400;
-    --glow-durga: #f07896;
+    --glow-tshechu: #ab9fcc;
+    --glow-tihar: #fc722a;
+    --glow-durga: #ff6c90;
     --glow-vivid: #87a5ff;
     --glow-cup: #1eb4d2;
-    --glow-fringe: #ffa5d2;
+    --glow-fringe: #fc9fcf;
     --glow-anzac: #e1ff2d;
 
     --font-display: "Fraunces", Georgia, serif;
@@ -905,7 +905,7 @@ body {
     display: block;
     text-align: left; /* Hebrew and Arabic greetings line up with the rest of the card */
     font-family: var(--font-display), system-ui, sans-serif;
-    font-size: 1.5rem; /* 24px is WCAG "large text", so every festival colour passes (lowest: Holi, 4.3:1 on cream) */
+    font-size: 1.5rem; /* 24px is WCAG "large text", so every festival colour passes (lowest: Adelaide Fringe, 4.2:1 on cream) */
     color: var(--c);
 }
 
