@@ -15,7 +15,7 @@ const EID_MONTHS = NOW.getFullYear() in EID_MONTH ? [EID_MONTH[NOW.getFullYear()
 // To add a festival: add an entry here, a card and list item in HCI.html, and colour tokens and a motif in style.css.
 // `lat`/`lon` is the real city or site; the pin sits at `pinLat`/`pinLon`, which a new festival needs inside its first country's border, about 170 km in and 450 km from other pins.
 // `color` names the token pair (--festival-<color> by day, --glow-<color> at night); `mood` is the theme the festival opens in;
-// `months` (0 = January) drive the "On now" label.
+// `months` (0 = January) drive the "On now" label; `heading`, when set, is a shorter name for the hero heading, whose name line must fit the 230px column at 1000px wide.
 const FESTIVALS = [
     { id: "diwali", label: "Diwali", lat: 26.7922, lon: 82.1998, pinLat: 25.2344, pinLon: 80.6018, color: "diwali", mood: "night", months: [9, 10], countries: ["India"] },
     { id: "lunar-new-year", label: "Chinese New Year", lat: 39.9042, lon: 116.4074, pinLat: 39.9619, pinLon: 116.318, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
@@ -33,18 +33,18 @@ const FESTIVALS = [
     { id: "bastille-day", label: "Bastille Day", lat: 48.8566, lon: 2.3522, pinLat: 48.7998, pinLon: 2.3975, color: "bastille", mood: "day", months: [6], countries: ["France"] },
     { id: "mardi-gras", label: "Mardi Gras", lat: 29.9584, lon: -90.0644, pinLat: 31.0715, pinLon: -90.9834, color: "mardigras", mood: "day", months: [1, 2], countries: ["United States of America"] },
     { id: "coachella", label: "Coachella", lat: 33.6803, lon: -116.2379, pinLat: 34.1179, pinLon: -116.024, color: "coachella", mood: "night", months: [3], countries: ["United States of America"] },
-    { id: "vina-del-mar", label: "Viña del Mar Festival", lat: -33.0245, lon: -71.5518, pinLat: -33.9659, pinLon: -70.9075, color: "vina", mood: "night", months: [1], countries: ["Chile"] },
+    { id: "vina-del-mar", label: "Viña del Mar Festival", heading: "Viña del Mar", lat: -33.0245, lon: -71.5518, pinLat: -33.9659, pinLon: -70.9075, color: "vina", mood: "night", months: [1], countries: ["Chile"] },
     { id: "guelaguetza", label: "Guelaguetza", lat: 17.0732, lon: -96.7266, pinLat: 17.2936, pinLon: -96.6363, color: "guelaguetza", mood: "day", months: [6], countries: ["Mexico"] },
     { id: "iemanja", label: "Festa de Iemanjá", lat: -13.0108, lon: -38.4917, pinLat: -11.6684, pinLon: -39.2512, color: "iemanja", mood: "day", months: [1], countries: ["Brazil"], related: ["Uruguay"] },
     // Essaouira itself falls just offshore on the 1:110m coastline, so Gnaoua sits 20 km inland
-    { id: "gnaoua", label: "Gnaoua World Music Festival", lat: 31.5, lon: -9.55, pinLat: 30.9751, pinLon: -7.9988, color: "gnaoua", mood: "night", months: [5], countries: ["Morocco"] },
-    { id: "fez-sacred-music", label: "Fez Festival of World Sacred Music", lat: 34.0331, lon: -5.0003, pinLat: 33.8324, pinLon: -4.6326, color: "fez", mood: "night", months: [4, 5], countries: ["Morocco"] },
-    { id: "cape-town-carnival", label: "Cape Town Minstrel Carnival", lat: -33.9249, lon: 18.4241, pinLat: -33.0281, pinLon: 20.0137, color: "cape", mood: "day", months: [0], countries: ["South Africa"] },
-    { id: "dubai-shopping-festival", label: "Dubai Shopping Festival", lat: 25.2048, lon: 55.2708, pinLat: 24.2457, pinLon: 55.2235, color: "dsf", mood: "night", months: [11, 0], countries: ["United Arab Emirates"] },
+    { id: "gnaoua", label: "Gnaoua World Music Festival", heading: "Gnaoua Festival", lat: 31.5, lon: -9.55, pinLat: 30.9751, pinLon: -7.9988, color: "gnaoua", mood: "night", months: [5], countries: ["Morocco"] },
+    { id: "fez-sacred-music", label: "Fez Festival of World Sacred Music", heading: "Fez Sacred Music", lat: 34.0331, lon: -5.0003, pinLat: 33.8324, pinLon: -4.6326, color: "fez", mood: "night", months: [4, 5], countries: ["Morocco"] },
+    { id: "cape-town-carnival", label: "Cape Town Minstrel Carnival", heading: "Minstrel Carnival", lat: -33.9249, lon: 18.4241, pinLat: -33.0281, pinLon: 20.0137, color: "cape", mood: "day", months: [0], countries: ["South Africa"] },
+    { id: "dubai-shopping-festival", label: "Dubai Shopping Festival", heading: "Dubai Shopping", lat: 25.2048, lon: 55.2708, pinLat: 24.2457, pinLon: 55.2235, color: "dsf", mood: "night", months: [11, 0], countries: ["United Arab Emirates"] },
     // Nowruz lights the other states on UNESCO's joint inscription
     { id: "nowruz", label: "Nowruz", lat: 32.4279, lon: 53.6880, pinLat: 32.4279, pinLon: 53.688, color: "nowruz", mood: "day", months: [2], countries: ["Iran"],
         related: ["Afghanistan", "Azerbaijan", "India", "Iraq", "Kazakhstan", "Kyrgyzstan", "Pakistan", "Tajikistan", "Turkey", "Turkmenistan", "Uzbekistan"] },
-    { id: "sapporo-snow-festival", label: "Sapporo Snow Festival", lat: 43.0598, lon: 141.3469, pinLat: 42.4907, pinLon: 140.509, color: "sapporo", mood: "day", months: [1], countries: ["Japan"] },
+    { id: "sapporo-snow-festival", label: "Sapporo Snow Festival", heading: "Snow Festival", lat: 43.0598, lon: 141.3469, pinLat: 42.4907, pinLon: 140.509, color: "sapporo", mood: "day", months: [1], countries: ["Japan"] },
     { id: "awa-odori", label: "Awa Odori", lat: 34.0703, lon: 134.5548, pinLat: 33.7068, pinLon: 134.159, color: "awa", mood: "night", months: [7], countries: ["Japan"] },
     { id: "bon-om-touk", label: "Bon Om Touk", lat: 11.5564, lon: 104.9282, pinLat: 12.1837, pinLon: 104.411, color: "bon", mood: "day", months: [10], countries: ["Cambodia"] },
     { id: "tet", label: "Tết", lat: 14.0583, lon: 108.2772, pinLat: 14.2335, pinLon: 108.178, color: "tet", mood: "day", months: [0, 1], countries: ["Vietnam"] },
@@ -591,7 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Name on its own line, kept whole so "Eid al-Fitr" never breaks at its hyphen
         const name = document.createElement("span");
         name.className = "hero-name";
-        name.textContent = festival.label;
+        name.textContent = festival.heading || festival.label;
         heroTitle.replaceChildren(`A ${festival.mood} of `, name);
 
         document.querySelectorAll(".festival-card").forEach((card) => {
@@ -773,6 +773,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const regionToggle = document.querySelector(".region-toggle");
     const regionFilter = document.getElementById("region-filter");
+    // Older browsers (Chrome < 114, Safari < 17, Firefox < 125) lack popovers: the pills then always show, and these calls and selectors must be skipped
+    const hasPopover = "showPopover" in HTMLElement.prototype;
     let selectedRegion = null;
     // One pill per region in the list, so a new or renamed region needs no edit here
     ["All", ...[...new Set(Object.values(regionOf))].sort()].forEach((name) => {
@@ -788,6 +790,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const festivalUl = document.querySelector(".festival-list ul");
     const listItems = [...festivalUl.children]; // calendar order
+    // The list's left margin hangs its scrollbar outside the column; widths differ by browser and overlay scrollbars have none
+    const festivalList = festivalUl.parentElement;
+    const measureScrollbar = () => festivalList.style.setProperty("--list-scrollbar", `${festivalList.offsetWidth - festivalList.clientWidth}px`);
+    measureScrollbar();
+    window.addEventListener("resize", measureScrollbar);
     function setRegion(region) {
         if (region === selectedRegion) return; // re-appending the list items would drop the focus of a pressed list button
         selectedRegion = region;
@@ -806,7 +813,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const b = e.target.closest("button");
         if (!b) return;
         setRegion(b.textContent === "All" ? null : b.textContent);
-        regionFilter.hidePopover();
+        if (hasPopover) regionFilter.hidePopover();
         regionToggle.focus();
         // Dimming is visual only, so tell screen readers which festivals match
         const names = FESTIVALS.filter((f) => regionOf[f.id] === selectedRegion).map((f) => f.label);
@@ -815,7 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Its position is set only when it opens, so close it on resize instead of leaving it misplaced
     window.addEventListener("resize", () => {
-        if (regionFilter.matches(":popover-open")) regionFilter.hidePopover();
+        if (hasPopover && regionFilter.matches(":popover-open")) regionFilter.hidePopover();
     });
 
     // The popover lives in the top layer, so line it up under the toggle's right edge
@@ -920,9 +927,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener("keydown", (e) => {
-        if (e.key !== "Escape" || document.querySelector("dialog[open], :popover-open")) return; // Escape closes an open dialog or the region pills first, not the card
+        if (e.key !== "Escape" || document.querySelector(hasPopover ? "dialog[open], :popover-open" : "dialog[open]")) return; // Escape closes an open dialog or the region pills first, not the card
         if (selectedPin) closeFestival();
-        else setRegion(null);
+        else if (selectedRegion) {
+            setRegion(null);
+            globeStatus.textContent = "Showing all festivals";
+        }
     });
 
     // Keyboard: arrows turn the globe, Enter opens the festival facing the viewer

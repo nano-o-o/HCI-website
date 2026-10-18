@@ -369,7 +369,7 @@ body {
     background: var(--surface-bar);
     border: 1px solid var(--chip-border);
     color: var(--text);
-    box-shadow: 0 6px 24px rgba(242, 184, 75, 0.35);
+    box-shadow: 0 6px 24px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
 .region-filter:popover-open {
@@ -398,7 +398,7 @@ body {
 }
 
 .festival-list {
-    margin-left: -18px; /* the left scrollbar (10px in Chrome) and the ul's 8px padding hang in the margin, so items line up with the intro */
+    margin-left: calc(-8px - var(--list-scrollbar, 10px)); /* the left scrollbar (measured in globe.js) and the ul's 8px padding hang in the margin, so items line up with the intro */
     pointer-events: auto;
     overflow-x: hidden;
     overflow-y: auto;

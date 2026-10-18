@@ -154,7 +154,7 @@ The page theme is the `data-theme` attribute on `<html>` (`day` by default, `nig
 
 ## Typography
 
-- **Display (Fraunces):** the hero heading and card titles. The hero heading has no accent word and is always two lines: "A world of / festivals" on home, "A night of / Diwali" or "A day of / Eid al-Fitr" while a festival is open.
+- **Display (Fraunces):** the hero heading, card titles and the card greeting (non-Latin greetings fall back to a system font, since Fraunces covers only Latin). The hero heading has no accent word and is always two lines: "A world of / festivals" on home, "A night of / Diwali" or "A day of / Eid al-Fitr" while a festival is open. A name too long for the column at 1000px uses a shorter `heading` (Viña del Mar, Gnaoua Festival, Fez Sacred Music, Minstrel Carnival, Dubai Shopping, Snow Festival).
 - **Body (Alegreya Sans):** all other text, a humanist sans whose calligraphic strokes echo Fraunces. Buttons and labels use the bold weight.
 - **Fonts are bundled locally** in `vendor/fonts` so the site works offline, with Vietnamese subsets (loaded only for Vietnamese letters) so Tết's text keeps both typefaces.
 
