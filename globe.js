@@ -13,9 +13,11 @@ const THIS_MONTH = NOW.getMonth();
 const EID_MONTHS = NOW.getFullYear() in EID_MONTH ? [EID_MONTH[NOW.getFullYear()]] : [];
 
 // To add a festival: add an entry here, a card and list item in HCI.html, and colour tokens and a motif in style.css.
-// `lat`/`lon` is the real city or site; the pin sits at `pinLat`/`pinLon`, which a new festival needs inside its first country's border, about 170 km in and 450 km from other pins.
+// `lat`/`lon` is the real city or site; the pin sits at `pinLat`/`pinLon`. For a new festival, put that spot
+// inside its first country's border, about 170 km in and 450 km from other pins.
 // `color` names the token pair (--festival-<color> by day, --glow-<color> at night); `mood` is the theme the festival opens in;
-// `months` (0 = January) drive the "On now" label; `heading`, when set, is a shorter name for the hero heading, whose name line must fit the 230px column at 1000px wide.
+// `months` (0 = January) drive the "On now" label; `heading`, when set, is a shorter name for the hero heading
+// (its name line must fit the 230px column at 1000px wide).
 const FESTIVALS = [
     { id: "diwali", label: "Diwali", lat: 26.7922, lon: 82.1998, pinLat: 25.2344, pinLon: 80.6018, color: "diwali", mood: "night", months: [9, 10], countries: ["India"] },
     { id: "lunar-new-year", label: "Chinese New Year", lat: 39.9042, lon: 116.4074, pinLat: 39.9619, pinLon: 116.318, color: "lunar", mood: "night", months: [0, 1], countries: ["China"] },
@@ -84,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. Scene setup
     const scene = new THREE.Scene();
-    // Near plane is 10, not 0.1: nothing comes that close, and the better depth precision stops the day and night maps flickering through each other
+    // Near plane is 10, not 0.1: nothing comes that close, and the better depth precision
+    // stops the day and night maps flickering through each other
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 10, 1000);
     camera.position.z = 220;
 
@@ -364,10 +367,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const needleGeo = new THREE.CylinderGeometry(0.22, 0.22, NEEDLE, 6).rotateX(Math.PI / 2).translate(0, 0, -NEEDLE / 2);
     const needleMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(token("--ink-muted")), shininess: 80, transparent: true });
 
-    // Pushpin: a glossy ball. Flag: a pennant that turns around its pole to face the camera,
-    // on a pole leaning 25° so a flag seen from straight above (the selected pin) still shows it. Lantern: a glowing paper lantern with dark caps.
-    // Marker: a map-style teardrop standing on its tip, no needle. Candle: a candle in the festival colour with a gold flame,
-    // no needle. Firework: a small ball bursting into rays.
+    // Pushpin: a glossy ball.
+    // Flag: a pennant that turns around its pole to face the camera, on a pole leaning 25° so a flag seen
+    //   from straight above (the selected pin) still shows it.
+    // Lantern: a glowing paper lantern with dark caps.
+    // Marker: a map-style teardrop standing on its tip, no needle.
+    // Candle: a candle in the festival colour with a gold flame, no needle.
+    // Firework: a small ball bursting into rays.
     // Marker outline, spun around the pole: a circle (radius 2.4, centre 6.5 up) plus the two lines from the tip that touch it
     const markerProfile = [new THREE.Vector2(0, 0)];
     for (let a = Math.acos(2.4 / 6.5); a <= Math.PI + 1e-6; a += Math.PI / 16) markerProfile.push(new THREE.Vector2(2.4 * Math.sin(a), 6.5 - 2.4 * Math.cos(a)));
@@ -463,8 +469,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const isPin = (obj) => !!(obj && obj.userData.festival);
 
-    // Idle pin motion. Each function poses its style's parts for strength `a` (0 = rest pose, 1 = idle, 2 = hovered, selected or on now)
-    // and phase `ph`; the click target moves less than 1 unit. The pin's own rotation and position are offsets from their stored rest values.
+    // Idle pin motion. Each function poses its style's parts for strength `a` (0 = rest pose, 1 = idle,
+    // 2 = hovered, selected or on now) and phase `ph`; the click target moves less than 1 unit.
+    // The pin's own rotation and position are offsets from their stored rest values.
     const tiltE = new THREE.Euler();
     const tiltQ = new THREE.Quaternion();
     const tilt = (pin, x, y) => pin.quaternion.copy(pin.userData.baseQuat).multiply(tiltQ.setFromEuler(tiltE.set(x, y, 0)));
@@ -485,7 +492,8 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         candle: (pin, t, a, ph) => {
             const { flame } = pin.userData;
-            const n = 0.5 * Math.sin(t * 7 + ph) + 0.3 * Math.sin(t * 11.3 + ph * 1.7) + 0.2 * Math.sin(t * 17.9 + ph * 2.3); // three unrelated frequencies: irregular
+            // Flicker: three unrelated frequencies added together never repeat in a visible pattern
+            const n = 0.5 * Math.sin(t * 7 + ph) + 0.3 * Math.sin(t * 11.3 + ph * 1.7) + 0.2 * Math.sin(t * 17.9 + ph * 2.3);
             const s = 1 + 0.15 * a * n;
             flame.scale.set(1 - 0.08 * a * n, 1 - 0.08 * a * n, s);
             flame.position.z = 6 * (s - 1); // grows from its base on the wick
@@ -617,9 +625,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (!keepReading) setReading(false);
-        // Opening from home adds one history entry (so Back closes the card); switching festivals replaces it.
-        // From a reading view, first go back off its /about entry (popstate then replaces the card entry beneath it),
-        // so Close and Back always return home, not to the previous festival.
+        // Adds or replaces the history entry (see commitEntry)
         if (!fromHistory) commitEntry(entry, `#${targetId}`);
 
         if (!panel.contains(document.activeElement)) lastTrigger = document.activeElement;
@@ -710,7 +716,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     panel.addEventListener("scroll", () => { if (panel.classList.contains("is-reading")) updateProgress(); }, { passive: true });
 
-    // `animate` is true for in-page changes within one open festival; opening on /about stays instant
     // Scroll reveals: long-read blocks below the fold when it opens fade and rise in the first time they scroll into view
     const revealer = reduceMotion ? null : new IntersectionObserver((entries) => entries.forEach((e) => {
         if (!e.isIntersecting) return;
@@ -718,6 +723,7 @@ document.addEventListener("DOMContentLoaded", () => {
         revealer.unobserve(e.target);
     }), { root: panel, rootMargin: "0px 0px -40px 0px" });
 
+    // `animate` is true for in-page changes within one open festival; opening on /about stays instant
     function setReading(on, animate) {
         clearTimeout(readingTimer);
         if (revealer) {
@@ -804,7 +810,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hero.classList.remove("panel-open");
         panel.setAttribute("aria-hidden", "true");
         regionButtons.forEach((btn) => btn.setAttribute("aria-pressed", "false"));
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
         if (wasOpen && lastTrigger && lastTrigger !== document.body && document.contains(lastTrigger)) {
             lastTrigger.focus({ preventScroll: true });
         }
@@ -834,7 +840,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const regionToggle = document.querySelector(".region-toggle");
     const regionFilter = document.getElementById("region-filter");
-    // Older browsers (Chrome < 114, Safari < 17, Firefox < 125) lack popovers: the pills then always show, and these calls and selectors must be skipped
+    // Older browsers (Chrome < 114, Safari < 17, Firefox < 125) lack popovers: the pills then always show,
+    // and these calls and selectors must be skipped
     const hasPopover = "showPopover" in HTMLElement.prototype;
     let selectedRegion = null;
     // One pill per region in the list, so a new or renamed region needs no edit here
@@ -981,14 +988,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // About dialog: the close button or a click on the backdrop closes it
-    const about = document.getElementById("about-dialog");
-    document.getElementById("about-btn").addEventListener("click", () => about.showModal());
-    about.addEventListener("click", (e) => {
-        if (e.target === about || e.target.closest(".close-btn")) about.close();
+    const aboutDialog = document.getElementById("about-dialog");
+    document.getElementById("about-btn").addEventListener("click", () => aboutDialog.showModal());
+    aboutDialog.addEventListener("click", (e) => {
+        if (e.target === aboutDialog || e.target.closest(".close-btn")) aboutDialog.close();
     });
 
     document.addEventListener("keydown", (e) => {
-        if (e.key !== "Escape" || document.querySelector(hasPopover ? "dialog[open], :popover-open" : "dialog[open]")) return; // Escape closes an open dialog or the region pills first, not the card
+        // An open dialog or the region pills take Escape first (the browser closes them), not the card
+        if (e.key !== "Escape" || document.querySelector(hasPopover ? "dialog[open], :popover-open" : "dialog[open]")) return;
         if (selectedPin) closeFestival();
         else if (selectedRegion) {
             setRegion(null);
@@ -1087,7 +1095,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const show = Math.min(1, Math.max(0, (zoom * view.k - LABEL_ZOOM) / 0.15)); // the bigger home view on wider screens shows them unzoomed
         labelLayer.hidden = show === 0;
         if (show === 0) return;
-        const edge = globeRadius / camera.position.length(); // a point on the globe is in view when its dot with the camera direction exceeds this
+        // A point on the globe faces the camera when its direction's dot product with the camera's exceeds this
+        const edge = globeRadius / camera.position.length();
         const cands = [];
         pinObjects.forEach((pin) => {
             const lab = pin.userData.label;
@@ -1119,7 +1128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 5d. Festival bursts: a 2 s burst out of the country when its festival opens, once the spin settles.
+    // 7b. Festival bursts: a 2 s burst out of the country when its festival opens, once the spin settles.
     // A see-through 2D canvas over the globe; nothing under reduced motion. Festivals without an entry get none.
     const BURSTS = {
         diwali: { kind: "spark", cols: ["#fde047", "#facc15", "#fb923c", "#fff7d6"] },
@@ -1167,6 +1176,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let burstPending = null; // festival id waiting for the spin to finish
     const rand = (a, b) => a + Math.random() * (b - a);
 
+    // Particles per kind and their speed range (px/s, before scaling to the globe's size)
+    const BURST_COUNTS = { spark: [80, [60, 170]], puff: [22, [30, 110]], petal: [45, [60, 170]], confetti: [70, [90, 220]], lantern: [18, [50, 140]],
+        glow: [30, [40, 130]], snow: [45, [60, 170]], spray: [70, [120, 240]], poppy: [12, [20, 60]], star: [26, [40, 120]] };
     function startBurst(id, pin) {
         const { kind, cols } = BURSTS[id];
         const W = container.clientWidth;
@@ -1181,7 +1193,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const s = Math.max(1, Math.min(2, Math.min(W, H) / 300)); // sized to the globe on screen
         const make = (k, n, speed) => {
             for (let i = 0; i < n * Math.sqrt(s); i++) {
-                const a = k === "spray" ? rand(-2.4, -0.75) : k === "poppy" ? rand(-2.6, -0.55) : rand(0, Math.PI * 2); // spray is thrown upward, poppies lifted gently
+                // Direction: spray is thrown upward, poppies lifted gently, the rest in every direction
+                const a = k === "spray" ? rand(-2.4, -0.75) : k === "poppy" ? rand(-2.6, -0.55) : rand(0, Math.PI * 2);
                 const sp = rand(...speed) * s;
                 fxParts.push({
                     kind: k, x, y, t: 0, col: cols[(Math.random() * cols.length) | 0],
@@ -1198,16 +1211,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
         fxParts = [];
-        if (kind === "spark") make("spark", 80, [60, 170]);
-        if (kind === "puff") { make("puff", 22, [30, 110]); make("speck", 40, [60, 160]); }
-        if (kind === "petal") make("petal", 45, [60, 170]);
-        if (kind === "confetti") make("confetti", 70, [90, 220]);
-        if (kind === "lantern") make("lantern", 18, [50, 140]);
-        if (kind === "glow") make("glow", 30, [40, 130]);
-        if (kind === "snow") make("snow", 45, [60, 170]);
-        if (kind === "spray") make("spray", 70, [120, 240]);
-        if (kind === "poppy") make("poppy", 12, [20, 60]);
-        if (kind === "star") make("star", 26, [40, 120]);
+        make(kind, ...BURST_COUNTS[kind]);
+        if (kind === "puff") make("speck", 40, [60, 160]); // fine powder thrown out with the clouds
     }
 
     function drawBurst(dt) {
@@ -1326,7 +1331,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let spinVel = 0; // idle spin speed, rad/s
 
     // Layout: the camera's view offset draws the globe k times bigger with its centre at (cx, cy) of the stage, without a bigger canvas.
-    // Home: big and to the right. Card open: centred between the list and the card. Phones keep the centred view (their CSS moves the globe).
+    // Home: big and to the right. Card open: centred between the list and the card.
+    // Phones keep the centred view (their CSS moves the globe).
     // Layout numbers are cached (measure) so the render loop reads no layout
     const side = document.querySelector(".hero-side");
     let W = 0, H = 0, listRight = 0, panelLeft = 0;
@@ -1364,7 +1370,8 @@ document.addEventListener("DOMContentLoaded", () => {
             globeGroup.rotation.y += (targetRot.y - globeGroup.rotation.y) * EASE;
             if (Math.abs(targetRot.x - globeGroup.rotation.x) + Math.abs(targetRot.y - globeGroup.rotation.y) < 0.001) targetRot = null;
         } else {
-            // Holds still over a pin, while dragging, and for keyboard users (Tab focus or arrows) only; a mouse click focuses the globe too
+            // Holds still over a pin, while dragging, and for keyboard users (Tab focus or arrows) only;
+            // :focus-visible, since a mouse click focuses the globe too
             const spinOn = !hoveredPin && !dragging && !selectedPin && !reduceMotion && !keyboardMode && zoomNow() < 1.05 && !container.matches(":focus-visible");
             spinVel += ((spinOn ? 0.09 : 0) - spinVel) * Math.min(1, dt * 4); // rad/s, eases up and down over about 1 s
             globeGroup.rotation.y += spinVel * dt;
@@ -1455,7 +1462,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const facing = pin.getWorldPosition(motionPos).normalize().dot(motionCam);
             const live = !reduceMotion && !dimmed && facing > 0.2;
             animatePin(pin, pin.userData.style, t, live ? (sel || hov || swing > 0.2 ? 2 : 1) : 0, i * 2.4);
-            // Turn the pennant around its pole to face the camera; seen straight down the pole there is no better angle, so it keeps the last one
+            // Turn the pennant around its pole to face the camera. Seen straight down the pole
+            // there is no better angle, so it keeps the last one.
             if (pin.userData.style === "flag" && facing > 0) {
                 const c = pin.worldToLocal(motionPos.copy(camera.position));
                 if (c.x * c.x + c.y * c.y > 1e-4 * c.lengthSq()) pin.userData.pennant.rotation.z = Math.atan2(-c.x, c.y);

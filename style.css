@@ -1413,6 +1413,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
     *,
     *::before,
     *::after {
@@ -1523,7 +1524,7 @@ body {
     }
 }
 
-/* Festival bursts (globe.js 5d) */
+/* Festival bursts (globe.js 7b) */
 .globe-fx {
     position: absolute;
     inset: 0;
