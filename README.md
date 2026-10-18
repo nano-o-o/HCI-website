@@ -54,4 +54,4 @@ A walkthrough of each part of `HCI.html`, `style.css` and `globe.js`, and how th
 - **Photos:** from Wikimedia Commons, under Creative Commons licences or in the public domain. Each photo's author and licence are credited on its card or reading view, with a link to the original file.
 - **three.js** r128 (MIT) for the globe
 - **topojson-client** 3.1.0 (ISC) and **Natural Earth** 1:110m country data (public domain, via world-atlas 2.0.2)
-- **Fonts:** Fraunces and Alegreya Sans (SIL Open Font License)
+- **Fonts:** Fraunces and Alegreya Sans, plus Noto Serif (Devanagari, Bengali, Thai, SC, JP) and Noto Naskh Arabic subsets for the greetings (all SIL Open Font License)

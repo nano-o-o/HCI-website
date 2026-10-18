@@ -25,6 +25,59 @@
     src: url("vendor/fonts/alegreya-sans-700.woff2") format("woff2");
 }
 
+/* Greeting fonts (Noto, SIL OFL, licences beside them): Noto variable fonts pinned at weight 600
+   and cut to the greetings' characters with fonttools (instancer, then pyftsubset). Each file's OS/2 x-height
+   is set to Fraunces' 0.482, so body's font-size-adjust scales them like Fraunces instead of shrinking them.
+   shortcut: a new or changed non-Latin greeting needs its file rebuilt, or those letters fall back to a system font. */
+@font-face {
+    font-family: "Noto Serif Devanagari";
+    font-weight: 600;
+    font-display: swap;
+    src: url("vendor/fonts/noto-serif-devanagari-600-greeting.woff2") format("woff2");
+    unicode-range: U+0900-097F;
+}
+
+@font-face {
+    font-family: "Noto Serif Bengali";
+    font-weight: 600;
+    font-display: swap;
+    src: url("vendor/fonts/noto-serif-bengali-600-greeting.woff2") format("woff2");
+    unicode-range: U+0980-09FF;
+}
+
+@font-face {
+    font-family: "Noto Serif Thai";
+    font-weight: 600;
+    font-display: swap;
+    src: url("vendor/fonts/noto-serif-thai-600-greeting.woff2") format("woff2");
+    unicode-range: U+0E00-0E7F;
+}
+
+@font-face {
+    font-family: "Noto Naskh Arabic";
+    font-weight: 600;
+    font-display: swap;
+    src: url("vendor/fonts/noto-naskh-arabic-600-greeting.woff2") format("woff2");
+    unicode-range: U+0600-06FF;
+}
+
+/* Exact characters, so each card loads only its own Chinese or Japanese file */
+@font-face {
+    font-family: "Noto Serif SC";
+    font-weight: 600;
+    font-display: swap;
+    src: url("vendor/fonts/noto-serif-sc-600-greeting.woff2") format("woff2");
+    unicode-range: U+4E50, U+5143, U+5BB5, U+5E74, U+5FEB, U+65B0, U+8282;
+}
+
+@font-face {
+    font-family: "Noto Serif JP";
+    font-weight: 600;
+    font-display: swap;
+    src: url("vendor/fonts/noto-serif-jp-600-greeting.woff2") format("woff2");
+    unicode-range: U+306B, U+308B, U+5446, U+898B, U+8E0A, U+963F;
+}
+
 /* Vietnamese subsets (Tết); the browser only loads them for these characters */
 @font-face {
     font-family: "Fraunces";
@@ -904,7 +957,8 @@ body {
 .greeting-native {
     display: block;
     text-align: left; /* Hebrew and Arabic greetings line up with the rest of the card */
-    font-family: var(--font-display), system-ui, sans-serif;
+    /* --font-display spelled out: its generic serif would otherwise pick a system font before the Noto files */
+    font-family: "Fraunces", "Noto Serif Devanagari", "Noto Serif Bengali", "Noto Serif Thai", "Noto Naskh Arabic", "Noto Serif SC", "Noto Serif JP", Georgia, serif;
     font-size: 1.5rem; /* 24px is WCAG "large text", so every festival colour passes (lowest: Adelaide Fringe, 4.2:1 on cream) */
     color: var(--c);
 }
