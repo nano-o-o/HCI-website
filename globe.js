@@ -127,6 +127,18 @@ document.addEventListener("DOMContentLoaded", () => {
     allCountries.forEach((f) => {
         countryByName[f.properties.name] = f;
     });
+    // The data's Morocco shape runs south of 27.657°N, W. Sahara's northern edge in the data, along the coast beside its
+    // W. Sahara shape. For the highlight only, that part moves to W. Sahara (the base map's borders stay as they are).
+    // Morocco's one ring crosses the line twice, so each side is one ring.
+    const CUT = 27.657;
+    const cutRing = (ring, north) => ring.flatMap((p, i) => {
+        const q = ring[(i + 1) % ring.length];
+        const cross = (p[1] >= CUT) !== (q[1] >= CUT) ? [[p[0] + ((CUT - p[1]) / (q[1] - p[1])) * (q[0] - p[0]), CUT]] : [];
+        return (p[1] >= CUT) === north ? [p, ...cross] : cross;
+    });
+    const moroccoRing = countryByName["Morocco"].geometry.coordinates[0];
+    countryByName["Morocco"] = { geometry: { type: "Polygon", coordinates: [cutRing(moroccoRing, true)] } };
+    countryByName["W. Sahara"] = { geometry: { type: "MultiPolygon", coordinates: [countryByName["W. Sahara"].geometry.coordinates, [cutRing(moroccoRing, false)]] } };
 
     // 4. Globe: a day map and a night map, crossfaded by fading the night sphere in and out
     const globeRadius = 60;
