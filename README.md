@@ -18,6 +18,7 @@ Cape Town Minstrel Carnival · Chinese New Year · Tết · Festa de Iemanjá ·
 - An "On now" badge on festivals happening this month
 - Day and night themes that follow the festival
 - A short burst when a festival opens: sparks (Diwali, Tihar, Chinese New Year, Tết, Bastille Day, Las Fallas, Dubai Shopping Festival, Vivid Sydney), coloured clouds (Holi, La Tomatina, Songkran), flower petals (Día de Muertos, Festa de Iemanjá, Durga Puja, Nowruz, Melbourne Cup), paper confetti (Rio Carnival, Mardi Gras, Venice Carnival, Cape Town Minstrel Carnival, Viña del Mar, Coachella, Oktoberfest, Guelaguetza, Adelaide Fringe, Gnaoua, Thimphu Tshechu), rising paper lanterns (Lantern Festival, Awa Odori), drifting candle lights (Loy Krathong, Fez Festival of World Sacred Music), snow (Sapporo Snow Festival), river spray (Bon Om Touk), a few falling poppy petals (Anzac Day) or gold stars and crescents (Eid al-Fitr)
+- Reading views with a read time, links that jump to each section, and a progress bar along the top
 - Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
 - Keyboard support: the arrow keys turn the globe, Enter opens the festival facing you, and + and - zoom
 - Layouts for desktop, tablet and phone

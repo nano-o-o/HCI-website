@@ -1025,6 +1025,64 @@ body {
     font-weight: 700;
 }
 
+/* Long-read body text: larger than the card's, about 74 characters per line in the 640px panel */
+.festival-about p,
+.festival-about .about-dates {
+    font-size: 1.06rem;
+    line-height: 1.65;
+}
+
+.festival-about h3 {
+    scroll-margin-top: 1rem; /* section links stop just above the heading */
+}
+
+/* Read time and section links (built by globe.js from each long read's headings) */
+.festival-about .read-time {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.6rem;
+}
+
+.about-toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.6rem;
+}
+
+.about-toc button {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.72); /* cream surface in both themes, so not the theme's chip-bg */
+    border: 1px solid rgba(43, 26, 61, 0.14);
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.about-toc button:hover {
+    border-color: var(--amber-text);
+    color: var(--amber-text);
+}
+
+/* Reading progress: a thin bar in the festival's colour along the panel's top edge (globe.js sets its colour and scale) */
+.read-progress {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    height: 4px;
+    margin-bottom: -4px;
+    transform: scaleX(0);
+    transform-origin: left;
+}
+
+.info-panel:not(.is-reading) .read-progress {
+    display: none;
+}
+
 /* Cream surface: dark focus ring so it stays visible in both themes */
 .festival-card :focus-visible {
     outline-color: var(--ink);

@@ -666,6 +666,50 @@ document.addEventListener("DOMContentLoaded", () => {
         closeBtn.innerHTML = reading ? BACK_ICON : "&times;";
         closeBtn.setAttribute("aria-label", reading ? "Back to festival summary" : "Close festival details");
     }
+    // Each long read gets a read time and a row of section links built from its own headings
+    // (buttons, not #links, since the hash holds the festival address)
+    document.querySelectorAll(".festival-about").forEach((about) => {
+        const heads = [...about.querySelectorAll("h3")];
+        const words = [...about.querySelectorAll("p")].filter((p) => p.previousElementSibling !== heads[heads.length - 1])
+            .reduce((n, p) => n + p.textContent.trim().split(/\s+/).length, 0); // body text, not the sources
+        const time = document.createElement("p");
+        time.className = "read-time";
+        time.textContent = `About ${Math.max(1, Math.round(words / 200))} min read`;
+        const toc = document.createElement("nav");
+        toc.className = "about-toc";
+        toc.setAttribute("aria-label", "Sections");
+        for (const h of heads) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.textContent = h.textContent.startsWith("How") ? "How" : h.textContent;
+            b.addEventListener("click", () => {
+                // A jump lands on settled text: unhidden blocks skip their 12px slide, so the heading's position is final
+                about.querySelectorAll(".reveal").forEach((el) => {
+                    el.style.transition = "none";
+                    el.classList.remove("reveal");
+                    void el.offsetHeight;
+                    el.style.transition = "";
+                });
+                h.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+                h.tabIndex = -1;
+                h.focus({ preventScroll: true });
+            });
+            toc.append(b);
+        }
+        about.prepend(time, toc);
+    });
+
+    // Reading progress: a bar along the panel's top edge, scaled to how far the long read has scrolled
+    const progress = document.createElement("div");
+    progress.className = "read-progress";
+    progress.setAttribute("aria-hidden", "true");
+    panel.prepend(progress);
+    function updateProgress() {
+        const max = panel.scrollHeight - panel.clientHeight;
+        progress.style.transform = `scaleX(${max > 0 ? panel.scrollTop / max : 0})`;
+    }
+    panel.addEventListener("scroll", () => { if (panel.classList.contains("is-reading")) updateProgress(); }, { passive: true });
+
     // `animate` is true for in-page changes within one open festival; opening on /about stays instant
     // Scroll reveals: long-read blocks below the fold when it opens fade and rise in the first time they scroll into view
     const revealer = reduceMotion ? null : new IntersectionObserver((entries) => entries.forEach((e) => {
@@ -690,6 +734,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!on) return;
         panel.scrollTop = 0;
         const about = panel.querySelector(".festival-card:not([hidden]) .festival-about");
+        if (about) progress.style.background = getComputedStyle(about).getPropertyValue("--c");
+        updateProgress();
         if (revealer && about) {
             const bottom = panel.getBoundingClientRect().bottom;
             for (const el of about.children) {
