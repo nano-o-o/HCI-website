@@ -822,6 +822,17 @@ body {
     object-fit: cover;
 }
 
+/* Photos whose subject sits off-centre: where the cover crop keeps them (the rest crop around the centre) */
+.card-img[src$="Oktoberfest-Feast.jpg"] { object-position: 50% 65%; }
+.card-img[src$="Songkran-KhaoChae.jpg"] { object-position: 50% 30%; }
+.card-img[src$="Loy-KhanomKrok.jpg"] { object-position: 50% 90%; }
+.card-img[src$="BonOmTouk-AkAmbok.jpg"] { object-position: 50% 60%; }
+.card-img[src$="Tihar-KukurTihar.jpg"] { object-position: 50% 25%; }
+.card-img[src$="Vivid-CustomsHouse.jpg"] { object-position: 50% 70%; }
+.card-img[src$="Vivid-CircularQuay.jpg"] { object-position: 50% 75%; }
+.card-img[src$="Cup-Lawns.jpg"] { object-position: 50% 70%; }
+.card-img[src$="Fringe-Gluttony.jpg"] { object-position: 50% 60%; }
+
 /* globe.js wraps each card photo in this button; it opens the photo viewer */
 .photo-open {
     display: block;
