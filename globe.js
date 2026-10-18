@@ -352,8 +352,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const needleGeo = new THREE.CylinderGeometry(0.22, 0.22, NEEDLE, 6).rotateX(Math.PI / 2).translate(0, 0, -NEEDLE / 2);
     const needleMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(token("--ink-muted")), shininess: 80, transparent: true });
 
-    // Pushpin: a glossy ball. Flag: a pennant fixed to the pole, so it turns with the globe
-    // (seen straight down the pole, as on the selected pin, it narrows to a line). Lantern: a glowing paper lantern with dark caps.
+    // Pushpin: a glossy ball. Flag: a pennant that turns around its pole to face the camera,
+    // on a pole leaning 25° so a flag seen from straight above (the selected pin) still shows it. Lantern: a glowing paper lantern with dark caps.
     // Marker: a map-style teardrop standing on its tip, no needle. Candle: a candle in the festival colour with a gold flame,
     // no needle. Firework: a small ball bursting into rays.
     // Marker outline, spun around the pole: a circle (radius 2.4, centre 6.5 up) plus the two lines from the tip that touch it
@@ -456,6 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tiltE = new THREE.Euler();
     const tiltQ = new THREE.Quaternion();
     const tilt = (pin, x, y) => pin.quaternion.copy(pin.userData.baseQuat).multiply(tiltQ.setFromEuler(tiltE.set(x, y, 0)));
+    const FLAG_LEAN = 25 * DEG;
     const PIN_MOTION = {
         push: (pin, t, a, ph) => tilt(pin, 0.05 * a * Math.sin(t * 1.7 + ph), 0.05 * a * Math.sin(t * 1.3 + ph * 1.3)),
         lantern: (pin, t, a, ph) => {
@@ -463,6 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (pin.material.emissive) pin.material.emissive.multiplyScalar(1 + 0.2 * a * Math.sin(t * 2.1 + ph)); // after the loop sets the base glow
         },
         flag: (pin, t, a, ph) => {
+            tilt(pin, FLAG_LEAN, 0); // a fixed lean, so a flag seen from straight above still shows its pennant
             const p = pin.userData.pennant.geometry.attributes.position;
             p.setY(1, 0.4 * a * Math.sin(t * 3 + ph - 0.8)); // the pole's own vertex (0) stays put
             p.setY(2, 1.0 * a * Math.sin(t * 3 + ph));
@@ -507,6 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
             pin.quaternion.copy(pin.userData.baseQuat);
             pin.position.copy(pin.userData.basePos);
             pin.userData.style = style;
+            PIN_MOTION[style](pin, 0, 0, 0); // the rest pose (the flag's lean)
             pin.geometry = headGeo[style];
             pin.material = mats[style];
             PIN_STYLES.forEach((s) => extras[s].forEach((part) => pin.remove(part)));
@@ -1394,6 +1397,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const facing = pin.getWorldPosition(motionPos).normalize().dot(motionCam);
             const live = !reduceMotion && !dimmed && facing > 0.2;
             animatePin(pin, pin.userData.style, t, live ? (sel || hov || swing > 0.2 ? 2 : 1) : 0, i * 2.4);
+            // Turn the pennant around its pole to face the camera; seen straight down the pole there is no better angle, so it keeps the last one
+            if (pin.userData.style === "flag" && facing > 0) {
+                const c = pin.worldToLocal(motionPos.copy(camera.position));
+                if (c.x * c.x + c.y * c.y > 1e-4 * c.lengthSq()) pin.userData.pennant.rotation.z = Math.atan2(-c.x, c.y);
+            }
             // Zoomed in, pins grow on screen only gently (world size shrinks as z^-0.6), and the hit area follows
             // Depth: pins facing the viewer read 1.15x, edge and far-side pins 0.7x (the selected pin keeps its own size)
             const depth = sel ? 1 : 0.7 + 0.45 * Math.max(0, facing);
