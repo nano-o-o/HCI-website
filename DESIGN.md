@@ -139,7 +139,7 @@ The site is a festival atlas with a 3D globe as the hero. It opens in a warm mor
 
 ## Themes
 
-The page theme is the `data-theme` attribute on `<html>` (`day` by default, `night` for night festivals). Theme changes take 1 second (the night sky sweeps, everything else fades), or happen instantly when the device asks for reduced motion.
+The page theme is the `data-theme` attribute on `<html>` (`day` by default, `night` for night festivals). Theme changes take half a second (the night sky sweeps, everything else fades; the globe's own day/night crossfade eases a little longer), or happen instantly when the device asks for reduced motion.
 
 | Token | Day (default) | Night |
 | --- | --- | --- |

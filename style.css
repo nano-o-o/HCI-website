@@ -165,7 +165,7 @@
     --font-body: "Alegreya Sans", system-ui, sans-serif;
     --radius: 16px;
     --lantern-shadow: 0 18px 40px -12px rgba(242, 184, 75, 0.35);
-    --theme-fade: 1s ease;
+    --theme-fade: 0.5s ease;
 }
 
 /* Semantic roles, switched by theme */
