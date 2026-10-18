@@ -628,7 +628,7 @@ body {
     pointer-events: none;
 }
 
-.coming-up-heading {
+.small-heading {
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -804,10 +804,6 @@ body {
     mask: var(--motif) center / 28px 14px repeat-x;
 }
 
-.card-content {
-    order: 2;
-}
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -893,7 +889,7 @@ body {
     right: 8px;
     bottom: 8px;
     max-width: calc(100% - 16px);
-    padding: 0.1rem 0.55rem;
+    padding: 0.25rem 0.55rem; /* at least 24px tall, the WCAG 2.2 minimum target, since it sits on the photo button */
     border-radius: 999px;
     background: color-mix(in srgb, var(--night-900) 60%, transparent);
     color: #ffffff;
@@ -911,6 +907,7 @@ body {
 }
 
 .card-content {
+    order: 2;
     padding: 1.25rem 2rem 2rem;
     display: flex;
     flex-direction: column;
@@ -1044,6 +1041,7 @@ body {
     font-weight: 600;
     color: var(--ink);
     margin-bottom: 0.4rem;
+    scroll-margin-top: 1rem; /* section links stop just above the heading */
 }
 
 /* Reading-view photo: the card photo's wrap, sized 16:10 and rounded; credit pill and viewer come with it */
@@ -1084,10 +1082,6 @@ body {
 .festival-about .about-dates {
     font-size: 1.06rem;
     line-height: 1.65;
-}
-
-.festival-about h3 {
-    scroll-margin-top: 1rem; /* section links stop just above the heading */
 }
 
 /* Read time and section links (built by globe.js from each long read's headings) */
@@ -1237,10 +1231,6 @@ body {
     .list-head,
     .pin-style {
         display: none;
-    }
-
-    #globe-container {
-        transform: none;
     }
 
     .festival-list {
@@ -1510,17 +1500,9 @@ body {
 
 @media (max-width: 720px) {
     .zoom-ctl {
-        left: auto;
         right: calc(1rem + 34px + 8px);
         top: 1rem;
         bottom: auto;
-        transform: none;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .globe-label {
-        transition: none;
     }
 }
 

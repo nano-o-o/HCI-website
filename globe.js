@@ -964,6 +964,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     closeBtn.addEventListener("click", closeFestival);
 
+    // Tell screen readers which links leave the page (sources and photo credits)
+    document.querySelectorAll('a[target="_blank"]').forEach((a) => {
+        const note = document.createElement("span");
+        note.className = "visually-hidden";
+        note.textContent = " (opens in a new tab)";
+        a.append(note);
+    });
+
     // Card photos open uncropped in a dialog, with their credit; a click anywhere but the credit closes it
     const viewer = document.getElementById("photo-viewer");
     const viewerImg = viewer.querySelector("img");
@@ -979,7 +987,7 @@ document.addEventListener("DOMContentLoaded", () => {
             viewerImg.src = img.src;
             viewerImg.alt = img.alt;
             viewerCredit.href = credit.href;
-            viewerCredit.textContent = credit.textContent;
+            viewerCredit.innerHTML = credit.innerHTML; // keeps the hidden new-tab note hidden
             viewer.showModal();
         });
     });
