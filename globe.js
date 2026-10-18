@@ -1057,7 +1057,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (o > 0) {
                 pin.getWorldPosition(labelV).project(camera);
                 const x = ((labelV.x + 1) / 2) * W;
-                const y = ((1 - labelV.y) / 2) * H + 16 * view.k * Math.pow(Math.max(zoom, 1), 0.4); // below the pin's head
+                const y = ((1 - labelV.y) / 2) * H + 16 * view.k; // below the pin's head
                 const box = [x - lab.w / 2 - 4, y - 4, x + lab.w / 2 + 4, y + lab.h + 4];
                 if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) o = 0;
                 else {
@@ -1385,7 +1385,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Selected pin glows and pulses; the others dim to 30% and hold still.
         // A chosen region dims the festivals outside it the same way.
         const matches = (f) => selectedRegion === null || regionOf[f.id] === selectedRegion;
-        const pinZoom = Math.pow(Math.max(zoom, 1), -0.6);
+        const pinZoom = 1 / Math.max(zoom, 1); // pins keep their on-screen size at every zoom
         pinObjects.forEach((pin, i) => {
             const { ring, dayColor, nightColor, festival } = pin.userData;
             const sel = pin === selectedPin;
@@ -1414,13 +1414,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const c = pin.worldToLocal(motionPos.copy(camera.position));
                 if (c.x * c.x + c.y * c.y > 1e-4 * c.lengthSq()) pin.userData.pennant.rotation.z = Math.atan2(-c.x, c.y);
             }
-            // Zoomed in, pins grow on screen only gently (world size shrinks as z^-0.6), and the hit area follows
+            // Zoomed in, pins shrink in the world as 1/zoom so they stay the same size on screen, and the hit area follows
             // Depth: pins facing the viewer read 1.15x, edge and far-side pins 0.7x (the selected pin keeps its own size)
             const depth = sel ? 1 : 0.7 + 0.45 * Math.max(0, facing);
             const size = PIN_SCALE * pinZoom * depth;
             pin.scale.setScalar((hov && !sel ? 1.4 : 1) * size);
             pin.userData.hitArea.scale.setScalar(1.15 / depth); // edge pins keep the front pin's click target
-            ring.scale.setScalar((sel ? 1.1 * pulse : hov ? 1.5 : pulse) * Math.pow(size, 1.5));
+            ring.scale.setScalar((sel ? 1.1 * pulse : hov ? 1.5 : pulse) * Math.pow(PIN_SCALE * depth, 1.5) * pinZoom);
         });
         updateLabels(zoom);
         updateZoomControls(zoom);
