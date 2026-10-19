@@ -4,6 +4,8 @@ An interactive 3D globe for discovering festivals around the world, made as a cl
 
 **Live site:** https://nano-o-o.github.io/HCI-website/
 
+![The home view: a 3D globe with festival pins and name labels over Europe and Africa, beside the festival list and the pin style switch](images/screenshot-home.jpg)
+
 Pick a festival from the list, or spin the globe and click a pin. The globe turns to the festival's country and opens a card about it. Festivals celebrated at night (such as Diwali and Chinese New Year) switch the page to a night theme. Each card links to a longer reading view covering what the festival celebrates and how it's celebrated and has photos of its food and, for most festivals, of people celebrating. Clicking a card's or reading view's photo shows the whole picture.
 
 ## Festivals
@@ -19,9 +21,32 @@ Cape Town Minstrel Carnival · Chinese New Year · Tết · Festa de Iemanjá ·
 - Day and night themes that follow the festival
 - A short burst when a festival opens: sparks (Diwali, Tihar, Chinese New Year, Tết, Bastille Day, Las Fallas, Dubai Shopping Festival, Vivid Sydney), coloured clouds (Holi, La Tomatina, Songkran), flower petals (Día de Muertos, Festa de Iemanjá, Durga Puja, Nowruz, Melbourne Cup), paper confetti (Rio Carnival, Mardi Gras, Venice Carnival, Cape Town Minstrel Carnival, Viña del Mar, Coachella, Oktoberfest, Guelaguetza, Adelaide Fringe, Gnaoua, Thimphu Tshechu), rising paper lanterns (Lantern Festival, Awa Odori), drifting candle lights (Loy Krathong, Fez Festival of World Sacred Music), snow (Sapporo Snow Festival), river spray (Bon Om Touk), a few falling poppy petals (Anzac Day) or gold stars and crescents (Eid al-Fitr)
 - Reading views with a read time, links that jump to each section, and a progress bar along the top
-- Back and forward buttons work, and each festival has its own link (for example `HCI.html#diwali`)
+- Back and forward buttons work, and every festival and reading view has its own link (see [Navigation](#navigation))
 - Keyboard support: the arrow keys turn the globe, Enter opens the festival facing you, and + and - zoom
 - Layouts for desktop, tablet and phone
+
+## Navigation
+
+The globe stays on screen, so festivals open beside it instead of on separate pages. Each view still has its own address:
+
+| View | Address |
+|---|---|
+| Home | `HCI.html` (`index.html` redirects here) |
+| A festival's card (35) | `HCI.html#diwali` |
+| Its reading view (35) | `HCI.html#diwali/about`, opened by the card's "Read more" link |
+
+Any of these can be bookmarked or shared and opens straight onto that view. Back steps from a reading view to its card, then home; Forward retraces the steps. Every reading view ends with its sources, and every photo links to its file on Wikimedia Commons: 180 outside links, all checked in October 2026.
+
+## Accessibility
+
+- **Keyboard:** Tab reaches every control; on the globe, the arrow keys turn it, Enter opens the festival facing you, + and - zoom, and Escape closes cards and dialogs
+- **Screen readers:** the globe announces the festival facing you, picking a region announces its festivals, every photo has alt text, and links that open a new tab say so
+- **Reduced motion:** when the device asks for it, the spin, pin motion, bursts, fades and smooth scrolling all switch off
+- **Click targets:** small controls meet the WCAG 2.2 target-size rule
+
+## Built with
+
+Plain HTML, CSS and JavaScript: one page, one external stylesheet, no frameworks and no build step. three.js draws the globe.
 
 ## Running it
 
@@ -42,7 +67,7 @@ and open http://localhost:8765/HCI.html.
 | `style.css` | Styles, day and night themes, festival colours |
 | `globe.js` | Globe, pins, festival data and navigation |
 | `DESIGN.md` | Design system: colours, type and layout rules |
-| `images/` | Festival photos |
+| `images/` | Festival photos, and the screenshot above |
 | `vendor/` | Bundled libraries, map data and fonts |
 
 ## Code explanation
